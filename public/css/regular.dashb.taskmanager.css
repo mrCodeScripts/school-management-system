@@ -1,0 +1,310 @@
+.sidebar-left-second-bar ul li .sub-pg-projects {
+    background-color: var(--dark-4) !important;
+    margin-left: 40px !important;
+    color: var(--light-1) !important;
+    border: 3px solid transparent !important;
+    transition: 
+        background-color 0.1s ease 0.2s,
+        color 0.1s ease 0.2s,
+        border-color 0.1s ease 0.2s,
+        font-weight 0.1s ease 0.2s,
+        margin 0.1s ease 0.2s !important;
+    font-weight: normal !important;
+    animation-name: show-from-left-tab;
+    animation-duration: 0.3s;
+    animation-iteration-count: 1;
+}
+
+@keyframes show-from-left-tab {
+    from {
+        opacity: 0;
+        transform: translateX(-10%);
+    } to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.sidebar-left-second-bar ul li .sub-pg-projects:hover {
+    margin-left: 50px !important;
+    background-color: transparent !important;
+    border-color: var(--dark-4) !important;
+    color: var(--dark-4) !important;
+    font-weight: 800 !important;
+}
+
+.sidebar-left-second-bar ul li .sub-pg-projects:hover .icons svg {
+    fill: var(--dark-4) !important;
+}
+
+.sub-pg-projects .icons svg {
+    width: 10px !important;
+    height: 10px !important;
+    fill: var(--light-1) !important;
+}
+
+
+
+
+.main-content-container .task-manager-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 30px 30px 0 20px;
+}
+
+.task-manager-wrapper .task-manager-upper-row {
+    display: flex;
+    flex-direction: column;
+    /* align-items: center; */
+}
+
+.task-manager-upper-row .upper-row-top {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 30px;
+}
+
+.upper-row-top .t-m-greetings-date {
+    display: flex;
+    flex-direction: column;
+    margin-right: auto;
+}
+
+.t-m-greetings-date > p {
+    font-size: 0.99em;
+    font-weight: 400;
+    color: var(--dark-4);
+    font-family: "Inter", sans-serif;
+}
+
+.t-m-greetings-date > h1 {
+    font-weight: 400;
+    font-size: 2.3em;
+    font-family: "Inter", sans-serif;
+    color: var(--dark-3);
+}
+
+.t-m-share-addtask {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.t-m-share-addtask button {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border: 1px solid var(--dark-8);
+    padding: 10px;
+    margin: 0 5px;
+    border-radius: 10px;
+    font-family: "Inter", sans-serif;
+    font-weight: 500;
+    background-color: var(--dark-8);
+    color: var(--light-1);
+    transition: background 0.2s ease;
+}
+
+.t-m-share-addtask .btn-icons {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+}
+
+.t-m-share-addtask button:hover {
+    background-color: var(--dark-3);
+    color: var(--light-2);
+}
+
+.t-m-share-addtask button:hover .btn-icons svg {
+    fill: var(--light-2);
+}
+
+.t-m-share-addtask button .btn-icons svg {
+    width: 100%;
+    height: 100%;
+    fill: var(--light-1)
+}
+
+
+.task-manager-upper-row .t-m-overview-info {
+    display: flex;
+    flex-direction: row;
+    margin-left: 10px;
+}
+
+.t-m-overview-info  {
+    display: flex;
+    flex-direction: row;
+    border: 1px solid var(--light-5);
+    max-width: fit-content;
+    border-radius: 40px;
+    padding: 10px 20px;
+}
+
+.t-m-overview-info .t-m-info {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    font-family: "Inter", sans-serif;
+    padding: 5px;
+    margin-left: 10px;
+}
+
+.t-m-overview-info .t-m-info:nth-child(1),
+.t-m-overview-info .t-m-info:nth-child(2)
+{
+    border-right: 3px solid var(--dark-7);
+}
+
+.t-m-info .inf {
+    font-weight: 600;
+    font-size: 0.9em;
+}
+
+.t-m-info .inf-label {
+    font-weight: 400;
+    color: var(--dark-8);
+    font-size: 0.8em;
+    margin-left: 3px;
+    margin-right: 5px;
+}
+
+.t-m-overview-info .t-m-info .icons {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+}
+
+.t-m-overview-info .icons svg {
+    width: 100%;
+    height: 100%;
+    fill: var(--dark-8);
+    stroke-width: 2px !important;
+}
+
+
+
+.task-manager-wrapper .task-manager-main-dashboards {
+    display: flex !important;
+    flex-direction: row;
+    flex: 1;
+    flex-wrap: wrap;
+}
+
+.task-manager-main-dashboards .projects-dashboard {
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 600px !important;
+    flex-grow: 1;
+    margin: 20px 10px;
+    border-radius: 25px;
+    padding: 15px 10px;
+    box-shadow: 0 0 30px 1px var(--light-3);
+    border: 1px solid var(--light-3);
+
+}
+
+.projects-dashboard .projects-dashboard-wrapper {
+    padding: 5px 20px;
+}
+
+.projects-dashboard-wrapper .projects-dashb-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.projects-dashb-header .projects-dashb-header-titled {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.projects-dashb-header-titled .icons {
+    width: 25px;
+    height: 25px;
+    margin-right: 10px;
+}
+
+.projects-dashb-header-titled .icons svg {
+    fill: var(--dark-6) !important;
+}
+
+.projects-dashb-header-titled .projects-dashb-title {
+    font-size: 1.3em;
+    font-family: "Inter", sans-serif;
+    font-weight: 600;
+    color: var(--dark-3);
+}
+
+.projects-dashb-header .task-select-day {
+    padding: 5px; 
+    border-radius: 5px;
+    margin-left: 10px;
+    border: 1px solid var(--light-1);
+}
+
+.task-select-day select {
+    border: none;
+    outline: none;
+}
+
+.projects-dashb-header .task-see-all-btn {
+    padding: 5px 10px;
+    border: 1px solid var(--light-4);
+    border-radius: 20px;
+    font-size: 1em;
+    font-family: "Inter", sans-serif;
+    font-weight: 500;
+    color: var(--dark-8);
+    margin-left: auto;
+}
+
+.projects-dashboard-wrapper .projects-table-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.projects-table-wrapper .projects-table {
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+}
+
+.projects-table .projects-header {
+    display: flex;
+    flex-direction: row;
+}
+
+.projects-header .projects-headers-label {
+    width: auto;
+}
+
+.projects-headers-label .headers-label-inner-container {
+    display: flex;
+    flex-direction: row;
+    width: inherit;
+    border: 1px solid var(--dark-3);
+}
+
+.projects-table-wrapper .projects-data {
+    display: flex;
+    flex-direction: column;
+}
+
+.projects-data .projects-table-row {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+}
+
+.projects-table-row .projects-table-data {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    /* border: 1px solid var(--dark-3); */
+}

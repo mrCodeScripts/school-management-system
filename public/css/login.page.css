@@ -1,0 +1,134 @@
+@import url("variables.css");
+
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: content-box;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    justify-content: center;
+}
+
+.form-container {
+    width: 400px;
+    height: 500px;
+    padding: 30px 10px 0 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.form-container .form-greet {
+    color: var(--dark-2);
+    font-size: 3em;
+    font-weight: 400;
+    font-family: "Montserrat", sans-serif;
+}
+
+.form-container form {
+    width: inherit;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    margin-top: 100px;
+}
+
+.form-container form .form-elements-wrapper {
+    width: auto;
+    height: auto;
+    display: flex;
+    /* background-color: var(--dark-2); */
+    background-color: transparent;
+    border: 1px solid var(--light-1);
+    flex-direction: row;
+    justify-content: center;
+    padding: 20px 25px;
+    border-radius: 15px;
+    margin: 0 0 30px 0;
+    transition: border-color 0.23s ease-in;
+
+    &:hover {
+        border-color: var(--dark-2);
+    }
+}
+
+.form-elements-wrapper input {
+    flex: 1;
+    outline: none;
+    border: none;
+    background-color: transparent;
+    /* color: var(--light-1); */
+    color: var(--dark-2);
+    font-size: 1.1em;
+    /* font-weight: 410; */
+    transition: all 0.2s ease-in;
+    font-family: "Roboto", sans-serif;
+    font-weight: 400;
+}
+
+.form-elements-wrapper .icons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+}
+
+.form-elements-wrapper .icons .icons-envelope {
+    fill: var(--dark-2) !important;
+    object-fit: cover !important;
+    width: 100% !important;
+    height: 100% !important;
+    /* fill: var(--light-2) !important; */
+}
+
+.form-elements-wrapper .icons .eyes {
+    fill: var(--dark-2) !important;
+    object-fit: cover !important;
+    width: 100% !important;
+    height: 100% !important;
+    /* fill: var(--light-2) !important; */
+}
+
+.form-container form button[type=submit] {
+    padding: 20px;
+    margin-top: 30px;
+    font-size: 1.2em;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 650;
+    color: var(--light-1);
+    /* background-color: var(--dark-2); */
+    background-color: var(--maroon-dark);
+    border: none;
+    outline: none;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.form-container form button[type=submit] .show-loader {
+    display: block;
+    margin-left: 10px;
+}
+
+.form-container form button[type=submit] .hide-loader {
+    display: none;
+}
+
+.notif-p-btm {
+    font-family: "Roboto", sans-serif;
+    font-size: 1em;
+    font-weight: 450;
+    margin-top: 10px;
+    text-align: center;
+}
