@@ -119,8 +119,9 @@ class RegularUserController
 
         if (empty($currentUserData)) {
             die(json_encode([
-                "LOGOUT_ERR" => "You are already logged out",
-                "somedata" => $currentUserData
+                "message" => "You are already logged out.",
+                "type" => "LOGOUT_ERR",
+                "status" => "unsuccessful",
             ]));
         }
 
@@ -135,17 +136,15 @@ class RegularUserController
         if (!$this->regularUserModel->addAccountLogRecords(2, 2, $UUID)) {
             $msg = $this->middleware->getMsg("LOGOUT_ERR");
             $this->messages[$msg["messageName"]] = $msg["message"][2];
-            die(json_encode($this->messages));
+            die(json_encode([
+                "message" => $msg["message"][2],
+                "type" => $msg["messageName"],
+                "status" => "unsuccessful",
+            ]));
         }
-
 
         session_unset();
         session_destroy();
-
-        /*
-        $this->middleware->unsetSessions();
-        $this->middleware->destroySessions();
-        */
     }
 
     public function updateAccountInformation()

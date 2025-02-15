@@ -152,7 +152,7 @@ class Middleware
 
     public function getMsg(
         string $errKey,
-    ): string | null {
+    ): array | null {
         return $this->builtInSystemCMsgs[$errKey] ?? null;
     }
 

@@ -11,7 +11,6 @@ import {
     toggleClass 
 } from "./interactive.js";
 
-
 if (login_form) {
     login_form.addEventListener("submit", async (e) => {
 
@@ -28,24 +27,24 @@ if (login_form) {
         });
 
         if (!_req.ok) {
-            if (login_loader.classList.contains("show-loader") ||
-                login_loader.classList.contains("hide-loader")) {
-                login_loader.classList.remove("show-loader");
-            }
+            toggleClass(login_loader, ["show-loader"]);
             console.log("Something went wrong!");
         }
 
         const _res = await _req.json();
         console.log(_res);
 
-        if (_res.status === "successful") { location.reload(); }
+        if (
+            _res.status === "successful" && 
+            _res.type === "ACCESS_GRANTED" &&
+            _res.refresh &&
+            _res.stop_load 
+        ) { location.reload(); }
         window.onload = () => toggleClass(login_loader, ["hide-loader"]);
         if (_res.error) { console.log(_res.error) }
     });
 }
 
 if (btn_logout) {
-    btn_logout.addEventListener("click", () => {
-
-    });
+    btn_logout.addEventListener("click", () => fetch("/logout"));
 }

@@ -289,6 +289,7 @@ $settings = [
         ],
         "ACCESS_GRANTED" => [
             "Succesfuly logged in!",
+            "Successfuly signed up!"
         ],
         "ACCESS_DENIED" => [
             "Incorrect email or password!",

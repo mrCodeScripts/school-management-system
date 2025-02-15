@@ -43,8 +43,6 @@ Router::get("/", function () {
 	$existingAccount = $_SESSION["userAccount"] ?? null;
 	if (!empty($existingAccount)) {
 		header("Location: /account");
-	} else {
-		include __DIR__ . "/../src/View/login.page.php";
 	}
 	include __DIR__ . "/../src/View/main.page.php";
 	die();
@@ -59,10 +57,22 @@ Router::post(
 		if (!$middleware->isSessionAvailable()) {
 			die(json_encode([
 				"message" => "Session is not available!",
-				"tye" => "SESSION_ERR",
+				"type" => "SESSION_ERR",
 				"status" => "unsuccessful",
 			]));
 		}
+
+		if ($middleware->isAnyColumnEmpty([
+			$_POST["login-email"],
+			$_POST["login-password"],
+		])) {
+			die(json_encode([
+				"message" => "Incomplete data!",
+				"type" => "LOGIN_ERR",
+				"status" => "successful",
+			]));
+		};
+
 
 		if (!$middleware->isValidEmailFormat(
 			$_POST["login-email"]
@@ -78,10 +88,6 @@ Router::post(
 			$_POST["login-email"],
 			$_POST["login-password"]
 		);
-
-		die(json_encode([
-			"status" => "successful",
-		]));
 	},
 	$middleware,
 	$regularUserController
@@ -98,11 +104,26 @@ Router::get("/login", function () {
 });
 
 Router::get("/account", function ($middleware) {
+	$existingAccount = $_SESSION["userAccount"] ?? null;
+	if (empty($existingAccount)) {
+		header("Location: /login");
+	}
 	include __DIR__
 		. "/../src/View/user.dashboards/regular.dashboard.php";
 	die();
 }, $middleware);
 
+Router::get("/logout", function (
+	$middleware,
+	$regularUserController
+) {
+	$regularUserController->logoutAccount();
+	die(json_encode([
+		"message" => "Successfuly logged out account!",
+		"type" => "LOGOUT_SUCCESS",
+		"status" => "successful",
+	]));
+}, $middleware, $regularUserController);
 
 
 
@@ -215,9 +236,6 @@ Router::get("/", function ($middleware, $regularUserModel) {
 
 /*
 Router::post("/req/logout", function ($regularUserController) {
-	$regularUserController->logoutAccount();
-	// die(json_encode(["LOGOUT_SUCCESS" => "Successfuly logged out account!"]));
-	header("Location: /p/login");
 }, $regularUserController);
 
 ROUTER::post("/req/signup", function ($regularUserController, $middleware) {

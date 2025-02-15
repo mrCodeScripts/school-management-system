@@ -7,6 +7,7 @@ $userAccLogs = $_SESSION["userAccount"]["currentAccountLogsInfo"];
 $ICONS = Config::generateResourcePack("SVGIcons");
 $CSS = Config::generateResourcePack("CSSFiles");
 $IMG = Config::generateResourcePack("dummyImg");
+$JS = Config::generateResourcePack("JSFiles");
 
 ?>
 <!DOCTYPE html>
@@ -389,5 +390,9 @@ $IMG = Config::generateResourcePack("dummyImg");
         </div>
     </div>
 </body>
+<?php echo $JS[0]; ?>
+<?php echo $JS[1]; ?>
+<?php echo $JS[2]; ?>
+<?php echo $JS[3]; ?>
 
 </html>
