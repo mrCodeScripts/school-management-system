@@ -114,6 +114,11 @@ body {
     flex-direction: row;
     align-items: center;
     justify-content: center;
+    transition: background-color 0.2s ease;
+}
+
+.form-container form button:disabled {
+    background-color: var(--dark-2);
 }
 
 .form-container form button[type=submit] .show-loader {

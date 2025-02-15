@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 $middleware = new Middleware();
-$userAccDetails = $_SESSION["userAccount"]["currentAccountBasicInfo"];
+$userAccDetails = $_SESSION["userAccount"]["currentAccountBasicInfo"][0];
 $userAccLogs = $_SESSION["userAccount"]["currentAccountLogsInfo"];
 $ICONS = Config::generateResourcePack("SVGIcons");
 $CSS = Config::generateResourcePack("CSSFiles");

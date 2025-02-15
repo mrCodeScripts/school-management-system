@@ -1,7 +1,15 @@
 "use strict";
 
-import { login_form, login_loader } from "./dom.js";
-import { createErrorMessage } from "./interactive.js";
+import { 
+    login_form, 
+    login_loader, 
+    btn_login,
+    btn_logout,
+} from "./dom.js";
+import { 
+    createErrorMessage, 
+    toggleClass 
+} from "./interactive.js";
 
 
 if (login_form) {
@@ -10,16 +18,9 @@ if (login_form) {
         e.preventDefault();
         const t = e.target;
 
-        if (login_loader) {
-            login_loader.classList.add("show-loader");
-            if (login_loader.classList.contains("show-loader")) {
-                login_loader.classList.remove("show-loader");
-                login_loader.ariaColSpan.add("hide-loader");
-            } else {
-                login_loader.classList.add("show-loader");
-                login_loader.ariaColSpan.remove("hide-loader");
-            }
-        }
+        btn_login.disabled = true;
+        toggleClass(login_loader, ["show-loader"], true);
+        toggleClass(login_loader, ["hide-loader"]);
 
         const _req = await fetch("/api/auth/login", {
             method: "POST",
@@ -35,11 +36,16 @@ if (login_form) {
         }
 
         const _res = await _req.json();
+        console.log(_res);
 
-        if (_res.status)
-
-            console.log(_res.message);
-
+        if (_res.status === "successful") { location.reload(); }
+        window.onload = () => toggleClass(login_loader, ["hide-loader"]);
         if (_res.error) { console.log(_res.error) }
+    });
+}
+
+if (btn_logout) {
+    btn_logout.addEventListener("click", () => {
+
     });
 }

@@ -4,14 +4,6 @@ declare(strict_types=1);
 require __DIR__ . "/../src/Bootstrap.php";
 Router::init();
 
-
-
-
-Router::get("", function () {
-	include __DIR__ . "/../src/View/main.page.php";
-	die();
-});
-
 Router::get("/signup", function () {
 	include __DIR__ . "/../src/View/signup.page.php";
 	die();
@@ -45,6 +37,19 @@ Router::get("/dashb/admin", function () {
 	die();
 });
 
+
+
+Router::get("/", function () {
+	$existingAccount = $_SESSION["userAccount"] ?? null;
+	if (!empty($existingAccount)) {
+		header("Location: /account");
+	} else {
+		include __DIR__ . "/../src/View/login.page.php";
+	}
+	include __DIR__ . "/../src/View/main.page.php";
+	die();
+});
+
 Router::post(
 	"/api/auth/login",
 	function (
@@ -58,6 +63,7 @@ Router::post(
 				"status" => "unsuccessful",
 			]));
 		}
+
 		if (!$middleware->isValidEmailFormat(
 			$_POST["login-email"]
 		)) {
@@ -67,10 +73,15 @@ Router::post(
 				"status" => "unsuccessful",
 			]));
 		}
+
 		$regularUserController->loginAccount(
 			$_POST["login-email"],
 			$_POST["login-password"]
 		);
+
+		die(json_encode([
+			"status" => "successful",
+		]));
 	},
 	$middleware,
 	$regularUserController

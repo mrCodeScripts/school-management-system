@@ -37,7 +37,7 @@ $JS = Config::generateResourcePack("JSFiles");
                     </svg>
                 </div>
             </div>
-            <button type="submit" class="sbmt-smooth-btn">
+            <button type="submit" class="sbmt-smooth-btn" id="btn-login">
                 Login
                 <div class="sm-loader hide-loader" id="login-loader"></div>
             </button>

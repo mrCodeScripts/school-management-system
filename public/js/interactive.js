@@ -54,7 +54,6 @@ export function toggleClass (_element, _classLists, add = false) {
     const _elemClassList = _element.className.split(" ");
     const _newClassList = _tempClassList.split(" ").filter(cls => {
         return !_elemClassList.includes(cls)}).join(" ");
-        console.log(_newClassList);
     if (add === true && _newClassList !== "") {
         _element.classList.add(_newClassList);
     } else if (add === false && _elemClassList !== "") {
@@ -65,3 +64,5 @@ export function toggleClass (_element, _classLists, add = false) {
         return false;
     }
 };
+
+export function toggleAttribute () {}
