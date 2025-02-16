@@ -217,6 +217,8 @@ class RegularUserController
             die(json_encode($this->messages));
         }
 
+        $findUser = $this->regularUserModel->getGeneralAccountInformations($data["email"]) ?? null;
+
         $fullAccountData = $this->regularUserModel->getAllUserData($findUser[0]["UUID"], $findUser[0]["user_email"]);
 
         if (!$this->middleware->setSessionData("userAccount", $fullAccountData)) {

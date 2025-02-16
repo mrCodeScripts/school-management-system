@@ -180,6 +180,8 @@ ROUTER::post("/api/auth/signup", function (
 		"message" => $msg["message"],
 		"type" => $msg["messageName"],
 		"status" => "successful",
+		"refresh" => true,
+		"stop_load" => true,
 	]));
 }, $regularUserController, $middleware);
 
@@ -189,7 +191,8 @@ Router::get(
 		$regularUserModel,
 		$middleware
 	) {
-		if ($middleware->isUserAlreadyLoggedIn()) {
+		$userExist = $_SESSION["userAccount"] ?? null;
+		if ($userExist) {
 			header("Location: /account");
 		}
 		$_SESSION["genderTypes"] = $regularUserModel->getAllGenderTypes();

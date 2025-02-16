@@ -63,7 +63,7 @@ if (signup_form) {
         toggleClass(signup_loader, ["show-loader"], true);
         toggleClass(signup_loader, ["hide-loader"]);
 
-        const _req = await fetch("/api/auth/login", {
+        const _req = await fetch("/api/auth/signup", {
             method: "POST",
             body: new FormData(t)
         });
