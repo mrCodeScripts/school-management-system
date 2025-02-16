@@ -135,6 +135,15 @@ $settings = [
                         "rel" => "stylesheet",
                     ]
                 ],
+                [
+                    "directives" => [
+                        "filePath" => "/css/access.dashb.css",
+                        "pathHandler" => "href",
+                    ],
+                    "elementAttributes" => [
+                        "rel" => "stylesheet",
+                    ]
+                ],
             ],
         ],
         "JSFiles" => [

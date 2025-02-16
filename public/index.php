@@ -121,15 +121,248 @@ Router::post("/logout", function (
 	]));
 }, $middleware, $regularUserController);
 
+ROUTER::post("/api/auth/signup", function (
+	$regularUserController,
+	$middleware
+) {
+	$data = [
+		"firstname" => $_POST["signup-firstname"] ?? null,
+		"lastname" => $_POST["signup-lastname"] ?? null,
+		"email" => $_POST["signup-email"] ?? null,
+		"age" => $_POST["signup-age"] ?? null,
+		"gender" => $_POST["signup-gender"] ?? null,
+		"confirm_password" => $_POST["signup-confirm-password"] ?? null,
+		"create_password" => $_POST["signup-create-password"] ?? null,
+		"role" => 1,
+	];
+
+	if ($middleware->isAnyColumnEmpty($data)) {
+		$msg = $middleware->msg("SERVER_ERR");
+		die(json_encode([
+			"message" => $msg["message"][0],
+			"type" => $msg["messageName"],
+			"status" => "unsuccessful",
+		]));
+	}
+
+	if (
+		$data["confirm_password"] !== $data["create_password"]
+	) {
+		$msg = $middleware->msg("PASSWORD_ERR");
+		die(json_encode([
+			"message" => $msg["message"][0],
+			"type" => $msg["messageName"],
+			"status" => "unsuccessful",
+		]));
+	}
+
+	if (!$middleware->isValidEmailFormat($data["email"])) {
+		$msg = $middleware->msg("EMAIL_ERR");
+		die(json_encode([
+			"message" => $msg["message"][0],
+			"type" => $msg["messageName"],
+			"status" => "unsuccessful",
+		]));
+	}
+
+	$data = [
+		"UUID" => $middleware->getUUID(),
+		"fn" => $middleware->stringSanitization($data["firstname"]),
+		"ln" => $middleware->stringSanitization($data["lastname"]),
+		"email" => $data["email"],
+		"pwd" => $middleware->getPasswordHashing(
+			$middleware->sanitizePassword($data["confirm_password"])
+		),
+		"age" => intval($data["age"]),
+		"gender_type" => $data["gender"],
+		"role" => $data["role"],
+	];
+
+	$regularUserController->signupAccount($data);
+	$msg = $middleware->getMsg("SIGNUP_SUCCESS");
+	die(json_encode([
+		"message" => $msg["message"],
+		"type" => $msg["messageName"],
+		"status" => "successful",
+	]));
+}, $regularUserController, $middleware);
+
+
+
 Router::get("/account/access-dashboard", function () {
+	if (empty($_SESSION["userAccount"])) {
+		header("Location: /login");
+	};
 	include __DIR__ . "/../src/View/user.dashboards/regular.subdashb/access.dashb.php";
 	die();
 });
 
+// Router::get("/account/", function ("") {});
+
 Router::get("/account/task-manager", function () {
+	if (empty($_SESSION["userAccount"])) {
+		header("Location: /login");
+	};
 	include __DIR__ . "/../src/View/user.dashboards/regular.subdashb/taskmanager.dashb.php";
 	die();
 });
+
+
+
+
+
+
+
+
+
+### TASK MANAGER ROUTER
+Router::post("/task/addTask", function ($middleware) {
+	if (!$middleware->isUserAlreadyLoggedIn()) {
+		header("Location: /login");
+	}
+}, $middleware);
+
+Router::post("/task/deleteTask", function ($middleware) {
+	if (!$middleware->isUserAlreadyLoggedIn()) {
+		header("Location: /login");
+	}
+}, $middleware);
+
+Router::post("/task/modifyTask/name", function ($middleware) {
+	if (!$middleware->isUserAlreadyLoggedIn()) {
+		header("Location: /login");
+	}
+}, $middleware);
+
+Router::post("/task/modifyTask/description", function ($middleware) {
+	if (!$middleware->isUserAlreadyLoggedIn()) {
+		header("Location: /login");
+	}
+}, $middleware);
+
+Router::post("/task/modifyTask/deadline", function ($middleware) {
+	if (!$middleware->isUserAlreadyLoggedIn()) {
+		header("Location: /login");
+	}
+}, $middleware);
+
+Router::post("/task/modifyTask/status", function ($middleware) {
+	if (!$middleware->isUserAlreadyLoggedIn()) {
+		header("Location: /login");
+	}
+}, $middleware);
+
+Router::get("/task/getTask", function ($middleware) {
+	if (!$middleware->isUserAlreadyLoggedIn()) {
+		header("Location: /login");
+	}
+}, $middleware);
+
+Router::get("/task/getAllTasks", function ($middleware) {
+	if (!$middleware->isUserAlreadyLoggedIn()) {
+		header("Location: /login");
+	}
+}, $middleware);
+
+Router::post("/task/assignTask", function ($middleware) {
+	if (!$middleware->isUserAlreadyLoggedIn()) {
+		header("Location: /login");
+	}
+}, $middleware);
+
+Router::post("/task/completeTask", function ($middleware) {
+	if (!$middleware->isUserAlreadyLoggedIn()) {
+		header("Location: /login");
+	}
+});
+
+Router::get("/task/userTasks", function ($middleware) {
+	if (!$middleware->isUserAlreadyLoggedIn()) {
+		header("Location: /login");
+	}
+}, $middleware);
+
+
+
+
+### STUDENT DASHBOARD ROUTES
+Router::get("/student/dashboard", function () {});
+Router::get("/student/tasks", function () {});
+Router::post("/student/submitTask", function () {});
+Router::get("/student/grades", function () {});
+Router::get("/student/schedule", function () {});
+
+### TEACHER DASHBOARD ROUTES
+Router::get("/teacher/dashboard", function () {});
+Router::get("/teacher/classes", function () {});
+Router::post("/teacher/addTask", function () {});
+Router::get("/teacher/tasks", function () {});
+Router::post("/teacher/gradeTask", function () {});
+Router::get("/teacher/students", function () {});
+
+### ADMIN DASHBOARD ROUTES
+Router::get("/admin/dashboard", function () {});
+Router::get("/admin/users", function () {});
+Router::post("/admin/addUser", function () {});
+Router::delete("/admin/removeUser", function () {});
+Router::post("/admin/updateUser", function () {});
+Router::get("/admin/systemLogs", function () {});
+Router::get("/admin/settings", function () {});
+
+### PARENT DASHBOARD ROUTES
+Router::get("/parent/dashboard", function () {});
+Router::get("/parent/studentProgress", function () {});
+Router::get("/parent/schedule", function () {});
+Router::get("/parent/messages", function () {});
+Router::post("/parent/contactTeacher", function () {});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -240,53 +473,6 @@ Router::get("/", function ($middleware, $regularUserModel) {
 /*
 Router::post("/req/logout", function ($regularUserController) {
 }, $regularUserController);
-
-ROUTER::post("/req/signup", function ($regularUserController, $middleware) {
-	$data = [
-		"firstname" => $_POST["signup-firstname"] ?? null,
-		"lastname" => $_POST["signup-lastname"] ?? null,
-		"email" => $_POST["signup-email"] ?? null,
-		"age" => $_POST["signup-age"] ?? null,
-		"gender" => $_POST["signup-gender"] ?? null,
-		"confirm_password" => $_POST["signup-confirm-password"] ?? null,
-		"create_password" => $_POST["signup-create-password"] ?? null,
-		"role" => 1,
-	];
-
-	if ($middleware->isAnyColumnEmpty($data)) {
-		$messages[$middleware->msg("SERVER_ERR")["messageName"]] = $middleware->msg("SERVER_ERR")["message"][0];
-		die(json_encode($messages));
-	}
-
-	# validate created is equal to the confirmed password
-	if ($data["confirm_password"] !== $data["create_password"]) {
-		$messages[$middleware->msg("PASSWORD_ERR")["messageName"]] = $middleware->msg("PASSWORD_ERR", 0)["message"][0];
-		die(json_encode($messages));
-	}
-
-	# validate email format
-	if (!$middleware->isValidEmailFormat($data["email"])) {
-		$messages[$middleware->msg("EMAIL_ERR")["messageName"]] = $middleware->msg("EMAIL_ERR")["message"][0];
-		die(json_encode($messages));
-	}
-
-	# initiate account data
-	$data = [
-		"UUID" => $middleware->getUUID(),
-		"fn" => $middleware->stringSanitization($data["firstname"]),
-		"ln" => $middleware->stringSanitization($data["lastname"]),
-		"email" => $data["email"],
-		"pwd" => $middleware->getPasswordHashing($middleware->sanitizePassword($data["confirm_password"])),
-		"age" => intval($data["age"]),
-		"gender_type" => $data["gender"],
-		"role" => $data["role"],
-	];
-
-	$regularUserController->signup($data);
-
-	$msg = $middleware->getMsg("SIGNUP_SUCCESS");
-	die(json_encode([$msg["messageName"] => $msg["message"][0]]));
-}, $regularUserController, $middleware);
 
 Router::post("/req/acc/student/enrollment", function ($middleware) {
 	# check if session is available

@@ -101,19 +101,8 @@ $IMG = Config::generateResourcePack("dummyImg");
                         <button>Register</button>
                     </div>
                 </div>
+                <div>
 
-                <div class="informations">
-                    <div class="info-bx-card">
-                        <div class="bx-card-inner">
-                            <p class="placeholder">Steps to register: </p>
-                        </div>
-                    </div>
-
-                    <div class="info-bx-card">
-                        <div class="bx-card-inner">
-
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

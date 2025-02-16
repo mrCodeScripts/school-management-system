@@ -54,7 +54,11 @@ class RegularUserController
             $findUser[0]["user_password"]
         )) {
             $msg = $this->middleware->getMsg("PASSWORD_ERR");
-            $this->regularUserModel->addAccountLogRecords(1, 5, $findUser[0]["UUID"]);
+            $this->regularUserModel->addAccountLogRecords(
+                1,
+                5,
+                $findUser[0]["UUID"]
+            );
             die(json_encode([
                 "message" => $msg["message"][0],
                 "type" => $msg["messageName"],
@@ -126,15 +130,26 @@ class RegularUserController
             ]));
         }
 
-        $currentUserEmail = $currentUserData["currentAccountBasicInfo"][0]["user_email"] ?? null;
+        $currentUserEmail =
+            $currentUserData["currentAccountBasicInfo"][0]["user_email"]
+            ?? null;
 
-        $UUID = $this->regularUserModel->getGeneralAccountInformations($currentUserEmail)[0]["UUID"];
+        $UUID = $this->regularUserModel
+            ->getGeneralAccountInformations($currentUserEmail)[0]["UUID"];
 
         if (empty($UUID)) {
-            die(json_encode(["LOGOUT_ERR" => "Something went wrong!"]));
+            die(json_encode([
+                "message" => "Something went wrong!",
+                "type" => "LOGOUT_ERR",
+                "status" => "unsuccessful",
+            ]));
         }
 
-        if (!$this->regularUserModel->addAccountLogRecords(2, 2, $UUID)) {
+        if (!$this->regularUserModel->addAccountLogRecords(
+            2,
+            2,
+            $UUID
+        )) {
             $msg = $this->middleware->getMsg("LOGOUT_ERR");
             $this->messages[$msg["messageName"]] = $msg["message"][2];
             die(json_encode([
@@ -180,7 +195,7 @@ class RegularUserController
         */
     }
 
-    public function signup(array $data)
+    public function signupAccount(array $data)
     {
         $findUser = $this->regularUserModel->getGeneralAccountInformations($data["email"]) ?? null;
 

@@ -1,0 +1,106 @@
+@import url("variables.css");
+
+* {
+    padding: 0;
+    margin: 0;
+}
+
+.greetings {
+    flex: 1;
+    margin-bottom: 20px;
+}
+
+.greetings .access-dashb-greetings {
+    font-family: "Roboto", sans-serif;
+    font-size: 2em;
+    color: var(--dark-3);
+    padding: 30px 0 20px 0;
+    text-align: center;
+}
+
+.access-register-btns {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    margin-top: 30px;
+}
+
+.access-register-btns button {
+    padding: 15px 40px;
+    margin: 0 3px;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
+    border-radius: 2px;
+    font-size: 1.1em;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease,
+                border-color 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.access-register-btns button:first-child {
+    background-color: var(--maroon-dark);
+    color: var(--light-1);
+}
+
+.access-register-btns button:first-child:hover {
+    /* background-color: var(--maroon-dark); */
+    background-color: transparent;
+    /* color: var(--light-1); */
+    color: var(--dark-8);
+    border-color: var(--maroon-dark);
+    border-radius: 2px;
+}
+
+.access-register-btns button:last-child:hover {
+    /* background-color: var(--maroon-dark); */
+    background-color: transparent;
+    /* color: var(--light-1); */
+    color: var(--dark-3);
+    border-color: var(--maroon-dark);
+    border-radius: 2px;
+}
+
+.info-bx-card {
+    border: 1px solid red;
+    /* width: 10px; */
+    height: 10px;
+    min-width: 500px;
+    max-width: 100%;
+    min-height: 400px;
+    max-height: 800px;
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 30px 1px var(--light-3);
+    border: 1px solid var(--light-3);
+    border-radius: 20px;
+    flex-grow: 1;
+}
+
+.info-bx-card .bx-card-inner {
+    margin: 30px;
+    flex: 1;
+}
+
+.bx-card-inner .placeholder {
+    font-size: 1.2em;
+    color: var(--dark-4);
+    font-family: "Motnserrat", sans-serif;
+    font-weight: 600;
+}
+
+.main-content-container-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content-container-wrapper .informations {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
