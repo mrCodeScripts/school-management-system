@@ -5,6 +5,9 @@ import {
     login_loader, 
     btn_login,
     btn_logout,
+    signup_form,
+    btn_signup,
+    signup_loader,
 } from "./dom.js";
 import { 
     createErrorMessage, 
@@ -49,6 +52,48 @@ if (login_form) {
         window.onload = () => toggleClass(login_loader, ["hide-loader"]);
     });
 }
+
+if (signup_form) {
+    signup_form.addEventListener("submit", async (e) => {
+
+        e.preventDefault();
+        const t = e.target;
+
+        btn_signup.disabled = true;
+        toggleClass(signup_loader, ["show-loader"], true);
+        toggleClass(signup_loader, ["hide-loader"]);
+
+        const _req = await fetch("/api/auth/login", {
+            method: "POST",
+            body: new FormData(t)
+        });
+
+        if (!_req.ok) {
+            toggleClass(signup_loader, ["show-loader"]);
+            console.log("Something went wrong!");
+        }
+
+        const _res = await _req.json();
+        console.log(_res);
+
+        if (
+            _res.status === "successful" && 
+            _res.type === "ACCESS_GRANTED" &&
+            _res.refresh &&
+            _res.stop_load 
+        ) {
+            location.reload(); 
+        } else {
+            toggleClass(signup_loader, ["show-loader"]);
+            toggleClass(signup_loader, ["hide-loader"], true);
+            btn_login.disabled = false;
+        }
+        window.onload = () => toggleClass(signup_loader, ["hide-loader"]);
+    });
+}
+
+
+
 
 if (btn_logout) {
     btn_logout.addEventListener("click", async () => {

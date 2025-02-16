@@ -226,12 +226,18 @@ class RegularUserController
         }
     }
 
+    public function addTask(
+        string $UUID,
+        string $taskName,
+        string $taskDescription,
+        string $status,
+        string $deadline,
+    ) {
+        # filter the tasks
+        # find if the task id already exist in the database
+        # if it already exist in the
+    }
 
-
-
-
-    public function getAllProfileInfo() {}
-    public function addTask() {}
     public function removeTask() {}
     public function markFinishedTask() {}
     public function addProfilePicture() {}

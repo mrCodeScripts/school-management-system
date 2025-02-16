@@ -161,12 +161,14 @@ class DatabaseModel
     return $statement->execute($conditionPlaceholders['keyPlaceholder1']);
   }
 
-  public function setBindedExecution(string $query, array $bindData)
+  public function setBindedExecution(string $query, ?array $bindData = null)
   {
     // $placeholder = $this->queryPlaceholderGenerator($bindData)["keyPlaceholder1"];
     $statement = $this->haveConnection()->prepare($query);
-    foreach ($bindData as $key => $value) {
-      $statement->bindValue(":$key", $value);
+    if (!empty($bindData)) {
+      foreach ($bindData as $key => $value) {
+        $statement->bindValue(":$key", $value);
+      }
     }
     $statement->execute();
     return $statement;

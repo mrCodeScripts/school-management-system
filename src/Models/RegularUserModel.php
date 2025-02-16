@@ -176,4 +176,11 @@ class RegularUserModel extends DatabaseModel
       }
       return $newLogRecord;
    }
+
+
+   public function getAllGenderTypes()
+   {
+      $query = "SELECT * FROM gender_types;";
+      return $this->setBindedExecution($query)->fetchAll();
+   }
 }

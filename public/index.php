@@ -4,10 +4,6 @@ declare(strict_types=1);
 require __DIR__ . "/../src/Bootstrap.php";
 Router::init();
 
-Router::get("/signup", function () {
-	include __DIR__ . "/../src/View/signup.page.php";
-	die();
-});
 Router::get("/acc/personal-informations", function () {
 	include __DIR__ . "/../src/View/user.dashboards/regular.dashboard.php";
 	die();
@@ -123,7 +119,7 @@ Router::post("/logout", function (
 
 ROUTER::post("/api/auth/signup", function (
 	$regularUserController,
-	$middleware
+	$middleware,
 ) {
 	$data = [
 		"firstname" => $_POST["signup-firstname"] ?? null,
@@ -187,7 +183,22 @@ ROUTER::post("/api/auth/signup", function (
 	]));
 }, $regularUserController, $middleware);
 
-
+Router::get(
+	"/signup",
+	function (
+		$regularUserModel,
+		$middleware
+	) {
+		if ($middleware->isUserAlreadyLoggedIn()) {
+			header("Location: /account");
+		}
+		$_SESSION["genderTypes"] = $regularUserModel->getAllGenderTypes();
+		include __DIR__ . "/../src/View/signup.page.php";
+		die();
+	},
+	$regularUserModel,
+	$middleware
+);
 
 Router::get("/account/access-dashboard", function () {
 	if (empty($_SESSION["userAccount"])) {

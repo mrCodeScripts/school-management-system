@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+$genderTypes = $_SESSION["genderTypes"] ?? null;
 $CSS = Config::generateResourcePack("CSSFiles");
 $ICONS = Config::generateResourcePack("SVGIcons");
 $JS = Config::generateResourcePack("JSFiles");
@@ -18,7 +19,7 @@ $JS = Config::generateResourcePack("JSFiles");
 <body>
     <div class="form-container">
         <h1 class="form-greet">Signup</h1>
-        <form>
+        <form id="signp-form">
             <div class="rowed-input-wrappers">
                 <div class="form-elements-wrapper blured-animation">
                     <input type="email" name="signup-firstname" id="signup-firstname" placeholder="Firstname" autocomplete="off" spellcheck="false" />
@@ -67,13 +68,23 @@ $JS = Config::generateResourcePack("JSFiles");
                 <div class="form-elements-wrapper blured-animation">
                     <select name="signup-gender" id="signup-gender">
                         <option value="" hidden selected>Select gender</option>
+                        <?php
+                        foreach ($genderTypes as $gender) {
+                            echo "
+                                <option value='{$gender["gender_id"]}' title='{$gender["gender_description"]}'>{$gender["gender_name"]}</option>
+                            ";
+                        }
+                        ?>
                     </select>
                 </div>
                 <div class="form-elements-wrapper blured-animation">
                     <input type="number" name="signup-age" id="signup-age" placeholder="Age" />
                 </div>
             </div>
-            <button type="submit">Signup</button>
+            <button type="submit" id="btn-signup">
+                Signup
+                <div class="sm-loader hide-loader" id="signup-loader"></div>
+            </button>
             <p class="notif-p-btm">Already have an account? <a href="/login">Login here</a></p>
 
             <!-- <label for="signup-lastname">Last Name:</label>
