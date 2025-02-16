@@ -180,6 +180,7 @@ class UserLogsComponent {
     }
 }
 
+/*
 const component = new UserLogsComponent(list, ["Status", "Activity", "Time", "Date"], 5, 2);
 component
 .filterByRow()
@@ -196,3 +197,4 @@ component
 
 console.log(component.numOfHiddenRows());
 
+*/
