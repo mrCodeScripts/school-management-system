@@ -54,7 +54,7 @@ class RegularUserModel extends DatabaseModel
          ON lt.log_type_id = lr.log_type 
          JOIN log_status ls 
          ON ls.log_status_id = lr.log_status 
-         WHERE lr.UUID = :UUID;";
+         WHERE lr.UUID = :UUID ORDER BY lr.log_time DESC";
       return $this->setBindedExecution(
          $query,
          ["UUID" => $UUID]

@@ -54,6 +54,7 @@ class RegularUserController
             $findUser[0]["user_password"]
         )) {
             $msg = $this->middleware->getMsg("PASSWORD_ERR");
+            $this->regularUserModel->addAccountLogRecords(1, 5, $findUser[0]["UUID"]);
             die(json_encode([
                 "message" => $msg["message"][0],
                 "type" => $msg["messageName"],
@@ -154,7 +155,8 @@ class RegularUserController
         if (!$currentUserData) {
             $this->middleware->destroySessions();
             $this->middleware->unsetSessions();
-            die("shit");
+            ## ADDMESSGE HERE
+            // die(json_encode[""])
         };
 
         $findUser = $this->regularUserModel->getGeneralAccountInformations($currentUserData["currentAccountBasicInfo"][0]["user_email"]);
@@ -167,11 +169,15 @@ class RegularUserController
 
         $fullAccountData = $this->regularUserModel->getAllUserData($findUser[0]["UUID"], $findUser[0]["user_email"]);
 
+        $_SESSION["userAccount"] = $fullAccountData;
+
+        /*
         if (!$this->middleware->setSessionData("userAccount", $fullAccountData)) {
             $msg = $this->middleware->getMsg("LOGIN_ERR");
             $this->messages[$msg["messageName"]] = $msg["message"][2];
             die(json_encode($this->messages));
         }
+        */
     }
 
     public function signup(array $data)

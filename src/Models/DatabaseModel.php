@@ -1,23 +1,28 @@
 <?php
+
 declare(strict_types=1);
-class DatabaseModel {
+class DatabaseModel
+{
   private static $instance = null;
   private $configSettings;
   private $connection;
 
-  public function __construct () { 
+  public function __construct()
+  {
     $this->configSettings = Config::getAllSettings();
     $this->connection = $this->createConnection();
   }
 
-  public static function getInstance() {
+  public static function getInstance()
+  {
     if (self::$instance === null) {
       self::$instance = new DatabaseModel();
     }
     return self::$instance;
   }
-   
-  private function createConnection() {
+
+  private function createConnection()
+  {
     $username = $this->configSettings["database_username"];
     $host = $this->configSettings["database_host"];
     $password = $this->configSettings["database_password"];
@@ -35,39 +40,49 @@ class DatabaseModel {
     }
   }
 
-  public function haveConnection () {
+  public function haveConnection()
+  {
     return $this->connection;
   }
 
-  public function isTableExist (string $tableName) {
+  public function isTableExist(string $tableName)
+  {
     $query = "SHOW TABLES LIKE :tableName";
     $statement = $this->haveConnection()->prepare($query);
     $statement->execute([":tableName" => $tableName]);
     return $statement->rowCount() > 0;
   }
 
-  public function areTableExists (array $tables) {foreach ($tables as $table){if(!$this->isTableExist($table)){return false;}}}
+  public function areTableExists(array $tables)
+  {
+    foreach ($tables as $table) {
+      if (!$this->isTableExist($table)) {
+        return false;
+      }
+    }
+  }
 
-  public function queryPlaceholderGenerator(array $data, string $condition = "AND"): array {
+  public function queryPlaceholderGenerator(array $data, string $condition = "AND"): array
+  {
     $placeholders = [];
     $arrayPlaceholders = [];
     $arrayData = [];
     $queryConditions = [];
     foreach ($data as $key => $value) {
-        if (is_array($value)) {
-            $keyParam = ":{$key}_" . implode("_", array_keys($value));
-            foreach ($value as $subKey => $subValue) {
-                $subKeyParam = ":{$key}_{$subKey}";
-                $arrayPlaceholders[$subKeyParam] = $subValue;
-                $arrayData[] = $subValue;
-                $queryConditions[] = "{$key} LIKE {$subKeyParam}";
-            }
-        } else {
-            $keyParam = ":{$key}";
-            $arrayPlaceholders[$keyParam] = $value;
-            $arrayData[] = $value;
-            $queryConditions[] = "{$key} = {$keyParam}";
+      if (is_array($value)) {
+        $keyParam = ":{$key}_" . implode("_", array_keys($value));
+        foreach ($value as $subKey => $subValue) {
+          $subKeyParam = ":{$key}_{$subKey}";
+          $arrayPlaceholders[$subKeyParam] = $subValue;
+          $arrayData[] = $subValue;
+          $queryConditions[] = "{$key} LIKE {$subKeyParam}";
         }
+      } else {
+        $keyParam = ":{$key}";
+        $arrayPlaceholders[$keyParam] = $value;
+        $arrayData[] = $value;
+        $queryConditions[] = "{$key} = {$keyParam}";
+      }
     }
     $stringPlaceholder1 = implode(", ", array_keys($arrayPlaceholders));
     $stringPlaceholder2 = implode(" $condition ", $queryConditions);
@@ -79,7 +94,8 @@ class DatabaseModel {
     return $placeholders;
   }
 
-  public function isDataExist(array $searchData, string $tableName, string $condition) {
+  public function isDataExist(array $searchData, string $tableName, string $condition)
+  {
     if (!$this->isTableExist($tableName)) {
       echo json_encode(["message" => "table does not exist"]);
       return false;
@@ -97,9 +113,12 @@ class DatabaseModel {
     return true;
   }
 
-  public function getAllData (string | array $selectedColumn, array $searchedData, array $tableNames, string $condition = "AND") {
+  public function getAllData(string | array $selectedColumn, array $searchedData, array $tableNames, string $condition = "AND")
+  {
     $conditionPlaceholders = $this->queryPlaceholderGenerator($searchedData, $condition);
-    if ($this->areTableExists($tableNames) === false){die(json_encode(["SERVER_DB_ERR" => "Table name does not exist in the database."]));}
+    if ($this->areTableExists($tableNames) === false) {
+      die(json_encode(["SERVER_DB_ERR" => "Table name does not exist in the database."]));
+    }
     if (is_array($selectedColumn)) $selectedColumn = implode(", ", $selectedColumn);
     if (is_array($tableNames)) $tableName = implode(", ", $tableNames);
     $query = "SELECT {$selectedColumn} FROM {$tableName} WHERE " . "{$conditionPlaceholders["keyPlaceholder3"]};";
@@ -113,21 +132,20 @@ class DatabaseModel {
 
   // $query = "SELECT log_type.log_type_name, log_status.log_status_name, user_logs.log_time WHERE UUID = :UUID;";
 
-  public function getAllDatabaseData () {
-  }
+  public function getAllDatabaseData() {}
 
-  public function getAllTableData () {
+  public function getAllTableData() {}
 
-  }
-
-  public function setDataInsertion (string $tableName, array $data) {
+  public function setDataInsertion(string $tableName, array $data)
+  {
     $placeholders = $this->queryPlaceholderGenerator($data);
     $query = "INSERT INTO `{$tableName}` (" . implode(", ", array_keys($data)) . ") VALUES (" . $placeholders['keyPlaceholder2'] . ")";
     $statement = $this->haveConnection()->prepare($query);
     return $statement->execute($placeholders['keyPlaceholder1']);
   }
 
-  public function setUpdateInsertion (string $tableName, array $data, array $conditions) {
+  public function setUpdateInsertion(string $tableName, array $data, array $conditions)
+  {
     $setPlaceholders = $this->queryPlaceholderGenerator($data, ",");
     $conditionPlaceholders = $this->queryPlaceholderGenerator($conditions);
     $query = "UPDATE `{$tableName}` SET " . $setPlaceholders['keyPlaceholder3'] . " WHERE " . $conditionPlaceholders['keyPlaceholder3'];
@@ -135,14 +153,16 @@ class DatabaseModel {
     return $statement->execute(array_merge($setPlaceholders['keyPlaceholder1'], $conditionPlaceholders['keyPlaceholder1']));
   }
 
-  public function setDeleteData(string $tableName, array $conditions) {
+  public function setDeleteData(string $tableName, array $conditions)
+  {
     $conditionPlaceholders = $this->queryPlaceholderGenerator($conditions);
     $query = "DELETE FROM `{$tableName}` WHERE " . $conditionPlaceholders['keyPlaceholder3'];
     $statement = $this->haveConnection()->prepare($query);
     return $statement->execute($conditionPlaceholders['keyPlaceholder1']);
   }
 
-  public function setBindedExecution (string $query, array $bindData) {
+  public function setBindedExecution(string $query, array $bindData)
+  {
     // $placeholder = $this->queryPlaceholderGenerator($bindData)["keyPlaceholder1"];
     $statement = $this->haveConnection()->prepare($query);
     foreach ($bindData as $key => $value) {
@@ -153,21 +173,21 @@ class DatabaseModel {
   }
 
 
-  public function startTransaction() {
+  public function startTransaction()
+  {
     $this->haveConnection()->beginTransaction();
   }
 
-  public function commitTransaction() {
+  public function commitTransaction()
+  {
     $this->haveConnection()->commit();
   }
 
-  public function rollbackTransaction() {
+  public function rollbackTransaction()
+  {
     $this->haveConnection()->rollBack();
   }
-
-  
-}
-;
+};
 
 
 
@@ -196,5 +216,6 @@ class DatabaseModel {
   ("Login", "Accessing of account."),
   ("Logout", "Loggin out of account"),
   ("Signup", "Creating new account.");
-  ("Unusual Login", "Already logged in?");
+  ("Unusual Login", "Already logged in?")
+  ("Password Error", "Wrong password? Is this you?");
 */

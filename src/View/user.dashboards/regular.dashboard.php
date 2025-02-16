@@ -348,36 +348,6 @@ $JS = Config::generateResourcePack("JSFiles");
                                                 <th>Date</th>
                                             </tr>
                                             <tbody class="log-record-data">
-                                                <!-- <tr class="record-data">
-                                                    <td class="data t-successful-1">Successful</td>
-                                                    <td class="data">Login</td>
-                                                    <td class="data">2 hours ago...</td>
-                                                    <td class="data">April 19</td>
-                                                </tr>
-                                                <tr class="record-data">
-                                                    <td class="data t-successful-1">Successful</td>
-                                                    <td class="data">Login</td>
-                                                    <td class="data">2 hours ago...</td>
-                                                    <td class="data">April 19</td>
-                                                </tr>
-                                                <tr class="record-data">
-                                                    <td class="data t-successful-1">Successful</td>
-                                                    <td class="data">Login</td>
-                                                    <td class="data">2 hours ago...</td>
-                                                    <td class="data">April 19</td>
-                                                </tr>
-                                                <tr class="record-data">
-                                                    <td class="data t-successful-1">Successful</td>
-                                                    <td class="data">Login</td>
-                                                    <td class="data">2 hours ago...</td>
-                                                    <td class="data">April 19</td>
-                                                </tr>
-                                                <tr class="record-data">
-                                                    <td class="data t-unsuccessful-1">Failed</td>
-                                                    <td class="data">Login</td>
-                                                    <td class="data">2 hours ago...</td>
-                                                    <td class="data">April 19</td>
-                                                </tr> -->
                                                 <?php
 
                                                 $count = 0;
@@ -386,7 +356,7 @@ $JS = Config::generateResourcePack("JSFiles");
                                                         "t-successful-1" : "t-unsuccessful-1";
                                                     $modifiedDate = $middleware->getModifiedTime($item["log_time"]) ?? "--";
                                                     echo ("
-                                                        <tr class='record-data'>
+                                                        <tr class='record-data' title='{$item["log_type_description"]}'>
                                                             <td class='data {$stat}'>{$item["log_status_name"]}</td>
                                                             <td class='data'>{$item["log_type_name"]}</td>
                                                             <td class='data'>{$item["last_accessed"]}</td>

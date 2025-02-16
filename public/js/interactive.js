@@ -65,6 +65,9 @@ export function toggleClass (_element, _classLists, add = false) {
     }
 };
 
+
+
+// ABANDONED (used next time)
 class UserLogsComponent {
     constructor(insertedList, headerColumns, rowNumLimit, selectedRowGP) {
         this.insertedList = insertedList;
