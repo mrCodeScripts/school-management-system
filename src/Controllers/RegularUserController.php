@@ -228,6 +228,19 @@ class RegularUserController
         }
     }
 
+    public function checkIfAccPremium(string $email)
+    {
+        $generalAccData = $this->regularUserModel
+            ->getGeneralAccountInformations($email);
+        $findPremiumAcc = $this->regularUserModel->getPremiumAccountData($generalAccData["UUID"]);
+        if ($findPremiumAcc) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
     public function addTask(
         string $UUID,
         string $taskName,

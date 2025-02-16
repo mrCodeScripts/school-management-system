@@ -177,6 +177,31 @@ class RegularUserModel extends DatabaseModel
       return $newLogRecord;
    }
 
+   public function getPremiumAccountData(string $UUID, ?string $entityType = null)
+   {
+      $entity = '';
+      switch ($entityType) {
+         case "student":
+            $entity = "registered_students";
+            break;
+         case "teacher":
+            $entity = "registered_teachers";
+            break;
+         case "parents":
+            $entity = "registered_parents";
+            break;
+         case "admin":
+            $entity = "registered_administrators";
+            break;
+         default:
+            $entity = "registered_students, 
+            registered_teachers, registered_parents,
+            registered_administrators";
+            break;
+      }
+      $query = "SELECT * FROM {$entity} WHERE UUID = :UUID;";
+      $this->databaseModel->setBindedExecution($query, ["UUID" => $UUID]);
+   }
 
    public function getAllGenderTypes()
    {

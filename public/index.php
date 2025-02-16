@@ -211,7 +211,81 @@ Router::get("/account/access-dashboard", function () {
 	die();
 });
 
-// Router::get("/account/", function ("") {});
+
+
+Router::get(
+	"/account/auth/student",
+	function ($middleware, $regularUserController, $studentController) {
+		$existingUser = $_SESSION["userAccount"];
+		if (empty($existingUser)) {
+			header("Location: /login");
+		}
+
+		if ($regularUserController->checkIfAccPremium($existingUser["currentAccountBasicInformations"][0]["user_email"])) {
+			header("Location: /account/auth/dashboard");
+		}
+
+		$collectedData = [
+			"student_firstname" => $_POST["student_firstname"],
+			"student_lastname" => $_POST["student_lastname"],
+			"student_birthdate" => $_POST["student_birthdate"],
+			"student_gender" => $_POST["student_gender"],
+			"student_LRN" => $_POST["student_LRN"],
+			"student_gradelvl" => $_POST["student_gradelvl"],
+		];
+
+		if ($middleware->isAnyColumnEmpty($collectedData)) {
+			die(json_encode([
+				"message" => "Incormplete data!",
+				"type" => "REGISTRATION_ERR",
+				"status" => "unsuccessful",
+			]));
+		}
+
+		$filteredData = [
+			"firstname" => $middleware->stringSanitization($collectedData["student_firstname"]),
+			"lastname" => $middleware->stringSanitization($collectedData["student_lastname"]),
+			"brithdate" => $collectedData["student_birthdate"],
+			"gender" => $collectedData["student_gender"],
+			"LRN" => $middleware->stringSanitization($collectedData["student_LRN"]),
+			"student_gradelvl" => $middleware->stringSanitization($collectedData["student_gradelvl"]),
+
+		];
+
+		$registration = $studentController->premiumRegistration($filteredData);
+
+		$middleware->setSessionData();
+
+		die(json_encode([
+			"message" => "",
+			"type" => "",
+			"status" => "successful",
+			"refresh" => true,
+			"stop_reload" => true,
+		]));
+	},
+	$middleware,
+	$regularUserController,
+	$studentController
+);
+
+Router::get(
+	"/account/access-dashboard/access-student",
+	function (
+		$middleware,
+		$regularUserController
+	) {
+		# check account if it has a premium access
+		# if it has premium access, only receive pin
+		# validate pin.
+		# after validation, set session for the user data
+	},
+	$middleware,
+	$regularUserController
+);
+
+
+
 
 Router::get("/account/task-manager", function () {
 	if (empty($_SESSION["userAccount"])) {
