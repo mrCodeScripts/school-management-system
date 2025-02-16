@@ -115,12 +115,11 @@ class Middleware
     ) {
         $isEmpty = true;
         foreach ($data as $key => $data) {
-            if ($data === null) {
+            if (empty($data)) {
                 $isEmpty = true;
                 break;
-            } else {
-                $isEmpty = false;
             }
+            $isEmpty = false;
         }
         return $isEmpty;
     }

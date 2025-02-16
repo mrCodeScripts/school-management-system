@@ -299,7 +299,6 @@ $JS = Config::generateResourcePack("JSFiles");
                                         </p>
                                     </div>
                                     <p id="user-acc-firstname" class="info">
-                                        April 19, 2007
                                         <?= $middleware->getModifiedTime($userAccDetails["account_created"]); ?>
                                     </p>
                                 </div>
@@ -347,38 +346,39 @@ $JS = Config::generateResourcePack("JSFiles");
                                                 <th>Activity</th>
                                                 <th>Time</th>
                                                 <th>Date</th>
-                                                <tbody class="log-record-data">
-                                                    <tr class="record-data">
-                                                        <td class="data t-successful-1">Successful</td>
-                                                        <td class="data">Login</td>
-                                                        <td class="data">2 hours ago...</td>
-                                                        <td class="data">April 19</td>
-                                                    </tr>
-                                                    <tr class="record-data">
-                                                        <td class="data t-successful-1">Successful</td>
-                                                        <td class="data">Login</td>
-                                                        <td class="data">2 hours ago...</td>
-                                                        <td class="data">April 19</td>
-                                                    </tr>
-                                                    <tr class="record-data">
-                                                        <td class="data t-successful-1">Successful</td>
-                                                        <td class="data">Login</td>
-                                                        <td class="data">2 hours ago...</td>
-                                                        <td class="data">April 19</td>
-                                                    </tr>
-                                                    <tr class="record-data">
-                                                        <td class="data t-successful-1">Successful</td>
-                                                        <td class="data">Login</td>
-                                                        <td class="data">2 hours ago...</td>
-                                                        <td class="data">April 19</td>
-                                                    </tr>
-                                                    <tr class="record-data">
-                                                        <td class="data t-unsuccessful-1">Failed</td>
-                                                        <td class="data">Login</td>
-                                                        <td class="data">2 hours ago...</td>
-                                                        <td class="data">April 19</td>
-                                                    </tr>
-                                                </tbody>
+                                            </tr>
+                                            <tbody class="log-record-data">
+                                                <tr class="record-data">
+                                                    <td class="data t-successful-1">Successful</td>
+                                                    <td class="data">Login</td>
+                                                    <td class="data">2 hours ago...</td>
+                                                    <td class="data">April 19</td>
+                                                </tr>
+                                                <tr class="record-data">
+                                                    <td class="data t-successful-1">Successful</td>
+                                                    <td class="data">Login</td>
+                                                    <td class="data">2 hours ago...</td>
+                                                    <td class="data">April 19</td>
+                                                </tr>
+                                                <tr class="record-data">
+                                                    <td class="data t-successful-1">Successful</td>
+                                                    <td class="data">Login</td>
+                                                    <td class="data">2 hours ago...</td>
+                                                    <td class="data">April 19</td>
+                                                </tr>
+                                                <tr class="record-data">
+                                                    <td class="data t-successful-1">Successful</td>
+                                                    <td class="data">Login</td>
+                                                    <td class="data">2 hours ago...</td>
+                                                    <td class="data">April 19</td>
+                                                </tr>
+                                                <tr class="record-data">
+                                                    <td class="data t-unsuccessful-1">Failed</td>
+                                                    <td class="data">Login</td>
+                                                    <td class="data">2 hours ago...</td>
+                                                    <td class="data">April 19</td>
+                                                </tr>
+                                            </tbody>
                                         </table>
                                     </div>
                                 </div>

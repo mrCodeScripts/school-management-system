@@ -113,7 +113,7 @@ Router::get("/account", function ($middleware) {
 	die();
 }, $middleware);
 
-Router::get("/logout", function (
+Router::post("/logout", function (
 	$middleware,
 	$regularUserController
 ) {

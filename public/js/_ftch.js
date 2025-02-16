@@ -39,12 +39,30 @@ if (login_form) {
             _res.type === "ACCESS_GRANTED" &&
             _res.refresh &&
             _res.stop_load 
-        ) { location.reload(); }
+        ) {
+            location.reload(); 
+        } else {
+            toggleClass(login_loader, ["show-loader"]);
+            toggleClass(login_loader, ["hide-loader"], true);
+            btn_login.disabled = false;
+        }
         window.onload = () => toggleClass(login_loader, ["hide-loader"]);
-        if (_res.error) { console.log(_res.error) }
     });
 }
 
 if (btn_logout) {
-    btn_logout.addEventListener("click", () => fetch("/logout"));
+    btn_logout.addEventListener("click", async () => {
+        const _req = await fetch("/logout", { method: "POST" });
+        if (!_req.ok) {
+            console.error("Something went wrong");
+        }
+        const _res = await _req.json();
+        console.log(_res);
+        if (
+            _res.status === "successful" &&
+            _res.type === "LOGOUT_SUCCESS"
+        ) {
+            location.reload();
+        }
+    });
 }
