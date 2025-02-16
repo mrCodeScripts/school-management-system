@@ -12,10 +12,6 @@ Router::get("/acc/personal-informations", function () {
 	include __DIR__ . "/../src/View/user.dashboards/regular.dashboard.php";
 	die();
 });
-Router::get("/acc/access-dashboard", function () {
-	include __DIR__ . "/../src/View/user.dashboards/regular.subdashb/access.dashb.php";
-	die();
-});
 Router::get("/acc/my-files", function () {
 	include __DIR__ . "/../src/View/user.dashboards/regular.subdashb/myfiles.dashb.php";
 	die();
@@ -125,7 +121,10 @@ Router::post("/logout", function (
 	]));
 }, $middleware, $regularUserController);
 
-
+Router::get("/account/access-dashboard", function () {
+	include __DIR__ . "/../src/View/user.dashboards/regular.subdashb/access.dashb.php";
+	die();
+});
 
 Router::get("/account/task-manager", function () {
 	include __DIR__ . "/../src/View/user.dashboards/regular.subdashb/taskmanager.dashb.php";
@@ -317,10 +316,7 @@ Router::get("/p/acc/personal-informations", function () {
 	include __DIR__ . "/../src/View/user.dashboards/regular.dashboard.php";
 	die();
 });
-Router::get("/p/acc/access-dashboard", function () {
-	include __DIR__ . "/../src/View/user.dashboards/regular.subdashb/access.dashb.php";
-	die();
-});
+
 
 Router::get("/p/acc/my-files", function () {
 	include __DIR__ . "/../src/View/user.dashboards/regular.subdashb/myfiles.dashb.php";
