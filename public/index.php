@@ -260,6 +260,8 @@ Router::post(
 	) {
 		# TODO NOW 
 		header("Content-Type: application/json");
+
+		# check if user is not logged in
 		$existingUser = $_SESSION["userAccount"] ?? null;
 		if (empty($existingUser)) {
 			die(json_encode([
@@ -269,10 +271,13 @@ Router::post(
 			]));
 		}
 
+		# collect data from the database
 		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
 		$generalAccData = $regularUserModel->getGeneralAccountInformations($userEmail) ?? null;
 		$findAccPremium = $regularUserController->checkAccPremium($generalAccData[0]["UUID"]) ?? null;
+		$UUID = $generalAccData[0]["UUID"];
 
+		# find if account is already a premium account.
 		if (!empty($findAccPremium)) {
 			die(json_encode([
 				"message" => "This account is already a premium account. 
@@ -282,59 +287,7 @@ Router::post(
 			]));
 		}
 
-		$registered_user = [
-			"entity_id" => $middleware->stringSanitization($_POST["register_lrn"]),
-			"UUID" => $middleware->getUUID(),
-			"register_role" => 4,
-			"registration_status_id" => 1,
-		];
-
-		$student_informations = [
-			"LRN" => $middleware->stringSanitization($_POST["register_lrn"]),
-			"firstname" => $middleware->stringSanitization($_POST["register_firstname"]),
-			"lastname" => $middleware->stringSanitization($_POST["register_lastname"]),
-			"age" => $middleware->stringSanitization($_POST["register_age"]),
-			"hometown" => $middleware->stringSanitization($_POST["register_hometown"]),
-			"current_location" => $middleware->stringSanitization($_POST["current_location"]),
-		];
-
-
-		/*
-		$studentModel->setNewPremiumAcc($data);
-		$studentModel->setNewPremiumRegRecord($logRecordData);
-
-
-		$collectedData = [
-			"student_firstname" => $_POST["student_firstname"],
-			"student_lastname" => $_POST["student_lastname"],
-			"student_birthdate" => $_POST["student_birthdate"],
-			"student_gender" => $_POST["student_gender"],
-			"student_LRN" => $_POST["student_LRN"],
-			"student_gradelvl" => $_POST["student_gradelvl"],
-		];
-
-		if ($middleware->isAnyColumnEmpty($collectedData)) {
-			die(json_encode([
-				"message" => "Incormplete data!",
-				"type" => "REGISTRATION_ERR",
-				"status" => "unsuccessful",
-			]));
-		}
-
-		$filteredData = [
-			"firstname" => $middleware->stringSanitization($collectedData["student_firstname"]),
-			"lastname" => $middleware->stringSanitization($collectedData["student_lastname"]),
-			"brithdate" => $collectedData["student_birthdate"],
-			"gender" => $collectedData["student_gender"],
-			"LRN" => $middleware->stringSanitization($collectedData["student_LRN"]),
-			"student_gradelvl" => $middleware->stringSanitization($collectedData["student_gradelvl"]),
-
-		];
-
-		$registration = $studentController->premiumRegistration($filteredData);
-
-		$middleware->setSessionData();
-		*/
+		$studentController->studentFullRegistration($UUID);
 
 		die(json_encode([
 			"message" => "You are now fucking registered.",

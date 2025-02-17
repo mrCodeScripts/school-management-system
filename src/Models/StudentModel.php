@@ -33,4 +33,14 @@ class StudentModel extends DatabaseModel
             "register_role" => $roleId,
         ])->fetchAll();
     }
+
+    public function getRegisteredStudentInformations(string $LRN)
+    {
+        $query = "SELECT *
+            FROM registered_students
+            WHERE LRN = :LRN;";
+        return $this->setBindedExecution($query, [
+            "LRN" => $LRN,
+        ]);
+    }
 };
