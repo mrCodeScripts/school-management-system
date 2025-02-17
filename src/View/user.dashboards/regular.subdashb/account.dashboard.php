@@ -1,9 +1,14 @@
 <?php
 
 declare(strict_types=1);
+$middleware = new Middleware();
+$userAccDetails = $_SESSION["userAccount"]["currentAccountBasicInfo"][0];
+$userAccLogs = $_SESSION["userAccount"]["currentAccountLogsInfo"];
 $ICONS = Config::generateResourcePack("SVGIcons");
 $CSS = Config::generateResourcePack("CSSFiles");
 $IMG = Config::generateResourcePack("dummyImg");
+$JS = Config::generateResourcePack("JSFiles");
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -25,9 +30,11 @@ $IMG = Config::generateResourcePack("dummyImg");
                     <?php echo $IMG[1] ?>
                 </div>
                 <div class="profile-name-email-rowed">
-                    <p class="profile-name">Jayrald Deniega</p>
+                    <p class="profile-name">
+                        <?php echo $userAccDetails["user_firstname"] . " " . $userAccDetails["user_lastname"]; ?>
+                    </p>
                     <div class="extra-info">
-                        <p class="profile-email">schooladmin@gmail.com </p>
+                        <p class="profile-email"><?php echo $userAccDetails["user_email"]; ?></p>
                     </div>
                 </div>
             </div>
@@ -41,7 +48,7 @@ $IMG = Config::generateResourcePack("dummyImg");
                             </div>
                             Personal informations
                         </a></li>
-                    <li><a href="/account/access-dashboard" class="current-pg">
+                    <li><a href="/account/dashboard" class="current-pg">
                             <div class="icons">
                                 <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#434343">
                                     <path d="M520-600v-240h320v240H520ZM120-440v-400h320v400H120Zm400 320v-400h320v400H520Zm-400 0v-240h320v240H120Zm80-400h160v-240H200v240Zm400 320h160v-240H600v240Zm0-480h160v-80H600v80ZM200-200h160v-80H200v80Zm160-320Zm240-160Zm0 240ZM360-280Z" />
@@ -119,5 +126,9 @@ $IMG = Config::generateResourcePack("dummyImg");
         </div>
     </div>
 </body>
+<?php echo $JS[0]; ?>
+<?php echo $JS[1]; ?>
+<?php echo $JS[2]; ?>
+<?php echo $JS[3]; ?>
 
 </html>

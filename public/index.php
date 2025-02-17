@@ -4,47 +4,124 @@ declare(strict_types=1);
 require __DIR__ . "/../src/Bootstrap.php";
 Router::init();
 
-Router::get("/acc/personal-informations", function () {
-	include __DIR__ . "/../src/View/user.dashboards/regular.dashboard.php";
-	die();
-});
-Router::get("/acc/my-files", function () {
-	include __DIR__ . "/../src/View/user.dashboards/regular.subdashb/myfiles.dashb.php";
-	die();
-});
-Router::get("/dashb/teacher", function () {
-	include __DIR__ . "/../src/View/user.dashboards/teacher.dashboard.php";
-	die();
-});
-Router::get("/dashb/student", function () {
-	include __DIR__ . "/../src/View/user.dashboards/student.dashboard.php";
-	die();
-});
-Router::get("/dashb/admin", function () {
-	include __DIR__ . "/../src/View/user.dashboards/admin.dashboard.php";
-	die();
-});
 
 
 
-
-
-
-Router::get("/", function () {
+# ======================= PAGE ROUTERS ======================= #
+Router::get("/", function ($studentModel) {
 	$existingAccount = $_SESSION["userAccount"] ?? null;
 	if (!empty($existingAccount)) {
 		header("Location: /account");
 	}
 	include __DIR__ . "/../src/View/main.page.php";
 	die();
+}, $studentModel);
+
+Router::get("/login", function () {
+	$existingAccount = $_SESSION["userAccount"] ?? null;
+	if (!empty($existingAccount)) {
+		header("Location: /account");
+	} else {
+		include __DIR__ . "/../src/View/login.page.php";
+	}
+	die();
 });
 
+Router::get("/account", function (
+	$middleware,
+	$regularUserController
+) {
+	$existingAccount = $_SESSION["userAccount"] ?? null;
+	if (empty($existingAccount)) {
+		header("Location: /login");
+	}
+	$regularUserController->updateAccountInformation();
+	include __DIR__
+		. "/../src/View/user.dashboards/regular.dashboard.php";
+	die();
+}, $middleware, $regularUserController);
+
+Router::get(
+	"/signup",
+	function (
+		$regularUserModel,
+		$middleware
+	) {
+		$userExist = $_SESSION["userAccount"] ?? null;
+		if ($userExist) {
+			header("Location: /account");
+		}
+		$_SESSION["genderTypes"] =
+			$regularUserModel->getAllGenderTypes();
+		include __DIR__ . "/../src/View/signup.page.php";
+		die();
+	},
+	$regularUserModel,
+	$middleware
+);
+
+Router::get("/account/dashboard", function () {
+	if (empty($_SESSION["userAccount"])) {
+		header("Location: /login");
+	};
+	include __DIR__
+		. "/../src/View/user.dashboards/regular.subdashb/account.dashboard.php";
+	die();
+});
+
+Router::get("/acc/personal-informations", function () {
+	include __DIR__
+		. "/../src/View/user.dashboards/regular.dashboard.php";
+	die();
+});
+
+Router::get("/acc/my-files", function () {
+	include __DIR__
+		. "/../src/View/user.dashboards/regular.subdashb/myfiles.dashb.php";
+	die();
+});
+
+Router::get("/dashb/teacher", function () {
+	include __DIR__
+		. "/../src/View/user.dashboards/teacher.dashboard.php";
+	die();
+});
+
+Router::get("/dashb/student", function () {
+	include __DIR__
+		. "/../src/View/user.dashboards/student.dashboard.php";
+	die();
+});
+
+Router::get("/dashb/admin", function () {
+	include __DIR__
+		. "/../src/View/user.dashboards/admin.dashboard.php";
+	die();
+});
+# ===================================================== #
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ======================= AUTHENTICATION REQUEST ======================= #
 Router::post(
 	"/api/auth/login",
 	function (
 		$middleware,
 		$regularUserController
 	) {
+		header("Content-Type: application/json");
 		if (!$middleware->isSessionAvailable()) {
 			die(json_encode([
 				"message" => "Session is not available!",
@@ -63,7 +140,6 @@ Router::post(
 				"status" => "successful",
 			]));
 		};
-
 
 		if (!$middleware->isValidEmailFormat(
 			$_POST["login-email"]
@@ -84,146 +160,149 @@ Router::post(
 	$regularUserController
 );
 
-Router::get("/login", function () {
-	$existingAccount = $_SESSION["userAccount"] ?? null;
-	if (!empty($existingAccount)) {
-		header("Location: /account");
-	} else {
-		include __DIR__ . "/../src/View/login.page.php";
-	}
-	die();
-});
-
-Router::get("/account", function ($middleware, $regularUserController) {
-	$existingAccount = $_SESSION["userAccount"] ?? null;
-	if (empty($existingAccount)) {
-		header("Location: /login");
-	}
-	$regularUserController->updateAccountInformation();
-	include __DIR__
-		. "/../src/View/user.dashboards/regular.dashboard.php";
-	die();
-}, $middleware, $regularUserController);
-
-Router::post("/logout", function (
+Router::post(
+	"/api/logout",
+	function (
+		$middleware,
+		$regularUserController
+	) {
+		$regularUserController->logoutAccount();
+		die(json_encode([
+			"message" => "Successfuly logged out account!",
+			"type" => "LOGOUT_SUCCESS",
+			"status" => "successful",
+		]));
+	},
 	$middleware,
 	$regularUserController
-) {
-	$regularUserController->logoutAccount();
-	die(json_encode([
-		"message" => "Successfuly logged out account!",
-		"type" => "LOGOUT_SUCCESS",
-		"status" => "successful",
-	]));
-}, $middleware, $regularUserController);
+);
 
-ROUTER::post("/api/auth/signup", function (
-	$regularUserController,
-	$middleware,
-) {
-	$data = [
-		"firstname" => $_POST["signup-firstname"] ?? null,
-		"lastname" => $_POST["signup-lastname"] ?? null,
-		"email" => $_POST["signup-email"] ?? null,
-		"age" => $_POST["signup-age"] ?? null,
-		"gender" => $_POST["signup-gender"] ?? null,
-		"confirm_password" => $_POST["signup-confirm-password"] ?? null,
-		"create_password" => $_POST["signup-create-password"] ?? null,
-		"role" => 1,
-	];
-
-	if ($middleware->isAnyColumnEmpty($data)) {
-		$msg = $middleware->msg("SERVER_ERR");
-		die(json_encode([
-			"message" => $msg["message"][0],
-			"type" => $msg["messageName"],
-			"status" => "unsuccessful",
-		]));
-	}
-
-	if (
-		$data["confirm_password"] !== $data["create_password"]
-	) {
-		$msg = $middleware->msg("PASSWORD_ERR");
-		die(json_encode([
-			"message" => $msg["message"][0],
-			"type" => $msg["messageName"],
-			"status" => "unsuccessful",
-		]));
-	}
-
-	if (!$middleware->isValidEmailFormat($data["email"])) {
-		$msg = $middleware->msg("EMAIL_ERR");
-		die(json_encode([
-			"message" => $msg["message"][0],
-			"type" => $msg["messageName"],
-			"status" => "unsuccessful",
-		]));
-	}
-
-	$data = [
-		"UUID" => $middleware->getUUID(),
-		"fn" => $middleware->stringSanitization($data["firstname"]),
-		"ln" => $middleware->stringSanitization($data["lastname"]),
-		"email" => $data["email"],
-		"pwd" => $middleware->getPasswordHashing(
-			$middleware->sanitizePassword($data["confirm_password"])
-		),
-		"age" => intval($data["age"]),
-		"gender_type" => $data["gender"],
-		"role" => $data["role"],
-	];
-
-	$regularUserController->signupAccount($data);
-	$msg = $middleware->getMsg("SIGNUP_SUCCESS");
-	die(json_encode([
-		"message" => $msg["message"],
-		"type" => $msg["messageName"],
-		"status" => "successful",
-		"refresh" => true,
-		"stop_load" => true,
-	]));
-}, $regularUserController, $middleware);
-
-Router::get(
-	"/signup",
+ROUTER::post(
+	"/api/auth/signup",
 	function (
-		$regularUserModel,
-		$middleware
+		$regularUserController,
+		$middleware,
 	) {
-		$userExist = $_SESSION["userAccount"] ?? null;
-		if ($userExist) {
-			header("Location: /account");
+		$data = [
+			"firstname" => $_POST["signup-firstname"] ?? null,
+			"lastname" => $_POST["signup-lastname"] ?? null,
+			"email" => $_POST["signup-email"] ?? null,
+			"age" => $_POST["signup-age"] ?? null,
+			"gender" => $_POST["signup-gender"] ?? null,
+			"confirm_password" => $_POST["signup-confirm-password"] ?? null,
+			"create_password" => $_POST["signup-create-password"] ?? null,
+			"role" => 1,
+		];
+
+		if ($middleware->isAnyColumnEmpty($data)) {
+			$msg = $middleware->msg("SERVER_ERR");
+			die(json_encode([
+				"message" => $msg["message"][0],
+				"type" => $msg["messageName"],
+				"status" => "unsuccessful",
+			]));
 		}
-		$_SESSION["genderTypes"] = $regularUserModel->getAllGenderTypes();
-		include __DIR__ . "/../src/View/signup.page.php";
-		die();
+
+		if (
+			$data["confirm_password"] !== $data["create_password"]
+		) {
+			$msg = $middleware->msg("PASSWORD_ERR");
+			die(json_encode([
+				"message" => $msg["message"][0],
+				"type" => $msg["messageName"],
+				"status" => "unsuccessful",
+			]));
+		}
+
+		if (!$middleware->isValidEmailFormat($data["email"])) {
+			$msg = $middleware->msg("EMAIL_ERR");
+			die(json_encode([
+				"message" => $msg["message"][0],
+				"type" => $msg["messageName"],
+				"status" => "unsuccessful",
+			]));
+		}
+
+		$data = [
+			"UUID" => $middleware->getUUID(),
+			"fn" => $middleware->stringSanitization($data["firstname"]),
+			"ln" => $middleware->stringSanitization($data["lastname"]),
+			"email" => $data["email"],
+			"pwd" => $middleware->getPasswordHashing(
+				$middleware->sanitizePassword($data["confirm_password"])
+			),
+			"age" => intval($data["age"]),
+			"gender_type" => $data["gender"],
+			"role" => $data["role"],
+		];
+
+		$regularUserController->signupAccount($data);
+		$msg = $middleware->getMsg("SIGNUP_SUCCESS");
+		die(json_encode([
+			"message" => $msg["message"],
+			"type" => $msg["messageName"],
+			"status" => "successful",
+			"refresh" => true,
+			"stop_load" => true,
+		]));
 	},
-	$regularUserModel,
+	$regularUserController,
 	$middleware
 );
 
-Router::get("/account/access-dashboard", function () {
-	if (empty($_SESSION["userAccount"])) {
-		header("Location: /login");
-	};
-	include __DIR__ . "/../src/View/user.dashboards/regular.subdashb/access.dashb.php";
-	die();
-});
-
-
-
-Router::get(
-	"/account/auth/student",
-	function ($middleware, $regularUserController, $studentController) {
-		$existingUser = $_SESSION["userAccount"];
+Router::post(
+	"/account/auth/student/enr",
+	function (
+		$middleware,
+		$regularUserController,
+		$studentController,
+		$regularUserModel,
+	) {
+		# TODO NOW 
+		header("Content-Type: application/json");
+		$existingUser = $_SESSION["userAccount"] ?? null;
 		if (empty($existingUser)) {
-			header("Location: /login");
+			die(json_encode([
+				"message" => "You are not logged in yet bitch!",
+				"type" => "PREMIUM_REGISTRATION_ERR",
+				"status" => "unsuccessful",
+			]));
 		}
 
-		if ($regularUserController->checkIfAccPremium($existingUser["currentAccountBasicInformations"][0]["user_email"])) {
-			header("Location: /account/auth/dashboard");
+		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
+		$generalAccData = $regularUserModel->getGeneralAccountInformations($userEmail) ?? null;
+		$findAccPremium = $regularUserController->checkAccPremium($generalAccData[0]["UUID"]) ?? null;
+
+		if (!empty($findAccPremium)) {
+			die(json_encode([
+				"message" => "This account is already a premium account. 
+				Please access account via PIN.",
+				"type" => "PREMIUM_REGISTRATION_ERR",
+				"status" => "unsuccessful",
+			]));
 		}
+
+		$registered_user = [
+			"entity_id" => $middleware->stringSanitization($_POST["register_lrn"]),
+			"UUID" => $middleware->getUUID(),
+			"register_role" => 4,
+			"registration_status_id" => 1,
+		];
+
+		$student_informations = [
+			"LRN" => $middleware->stringSanitization($_POST["register_lrn"]),
+			"firstname" => $middleware->stringSanitization($_POST["register_firstname"]),
+			"lastname" => $middleware->stringSanitization($_POST["register_lastname"]),
+			"age" => $middleware->stringSanitization($_POST["register_age"]),
+			"hometown" => $middleware->stringSanitization($_POST["register_hometown"]),
+			"current_location" => $middleware->stringSanitization($_POST["current_location"]),
+		];
+
+
+		/*
+		$studentModel->setNewPremiumAcc($data);
+		$studentModel->setNewPremiumRegRecord($logRecordData);
+
 
 		$collectedData = [
 			"student_firstname" => $_POST["student_firstname"],
@@ -255,18 +334,24 @@ Router::get(
 		$registration = $studentController->premiumRegistration($filteredData);
 
 		$middleware->setSessionData();
+		*/
 
 		die(json_encode([
-			"message" => "",
-			"type" => "",
+			"message" => "You are now fucking registered.",
+			"type" => "STUDENT_REGISTRATION_SUCESS",
 			"status" => "successful",
 			"refresh" => true,
 			"stop_reload" => true,
+			"current_user" => $existingUser["currentAccountBasicInfo"],
+			"general_user_data" => $generalAccData,
+			// "registered_user" => $registered_user,
+			// "student_information" => $student_informations,
 		]));
 	},
 	$middleware,
 	$regularUserController,
-	$studentController
+	$studentController,
+	$regularUserModel,
 );
 
 Router::get(
@@ -284,14 +369,12 @@ Router::get(
 	$regularUserController
 );
 
-
-
-
 Router::get("/account/task-manager", function () {
 	if (empty($_SESSION["userAccount"])) {
 		header("Location: /login");
 	};
-	include __DIR__ . "/../src/View/user.dashboards/regular.subdashb/taskmanager.dashb.php";
+	include __DIR__
+		. "/../src/View/user.dashboards/regular.subdashb/taskmanager.dashb.php";
 	die();
 });
 
@@ -303,7 +386,10 @@ Router::get("/account/task-manager", function () {
 
 
 
-### TASK MANAGER ROUTER
+
+
+/*
+
 Router::post("/task/addTask", function ($middleware) {
 	if (!$middleware->isUserAlreadyLoggedIn()) {
 		header("Location: /login");
@@ -373,6 +459,39 @@ Router::get("/task/userTasks", function ($middleware) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ### STUDENT DASHBOARD ROUTES
 Router::get("/student/dashboard", function () {});
 Router::get("/student/tasks", function () {});
@@ -403,7 +522,7 @@ Router::get("/parent/studentProgress", function () {});
 Router::get("/parent/schedule", function () {});
 Router::get("/parent/messages", function () {});
 Router::post("/parent/contactTeacher", function () {});
-
+*/
 
 
 
@@ -609,5 +728,8 @@ Router::get("/p/dashb/admin", function () {
 	die();
 });
 */
+
+
+
 
 Router::dispatch($_SERVER["REQUEST_URI"], $_SERVER["REQUEST_METHOD"]);

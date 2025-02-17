@@ -32,9 +32,11 @@ $JS = Config::generateResourcePack("JSFiles");
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#434343"><path d="M80 0v-160h800V0H80Zm160-320h56l312-311-29-29-28-28-311 312v56Zm-80 80v-170l448-447q11-11 25.5-17t30.5-6q16 0 31 6t27 18l55 56q12 11 17.5 26t5.5 31q0 15-5.5 29.5T777-687L330-240H160Zm560-504-56-56 56 56ZM608-631l-29-29-28-28 57 57Z"/></svg>
                 </button> -->
                 <div class="profile-name-email-rowed">
-                    <p class="profile-name">Jayrald Deniega</p>
+                    <p class="profile-name">
+                        <?php echo $userAccDetails["user_firstname"] . " " . $userAccDetails["user_lastname"]; ?>
+                    </p>
                     <div class="extra-info">
-                        <p class="profile-email">schooladmin@gmail.com </p>
+                        <p class="profile-email"><?php echo $userAccDetails["user_email"]; ?></p>
                     </div>
                 </div>
             </div>
@@ -48,7 +50,7 @@ $JS = Config::generateResourcePack("JSFiles");
                             </div>
                             Personal informations
                         </a></li>
-                    <li><a href="/account/access-dashboard">
+                    <li><a href="/account/dashboard">
                             <div class="icons">
                                 <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#434343">
                                     <path d="M520-600v-240h320v240H520ZM120-440v-400h320v400H120Zm400 320v-400h320v400H520Zm-400 0v-240h320v240H120Zm80-400h160v-240H200v240Zm400 320h160v-240H600v240Zm0-480h160v-80H600v80ZM200-200h160v-80H200v80Zm160-320Zm240-160Zm0 240ZM360-280Z" />

@@ -174,7 +174,10 @@ class RegularUserController
             // die(json_encode[""])
         };
 
-        $findUser = $this->regularUserModel->getGeneralAccountInformations($currentUserData["currentAccountBasicInfo"][0]["user_email"]);
+        $findUser = $this->regularUserModel
+            ->getGeneralAccountInformations(
+                $currentUserData["currentAccountBasicInfo"][0]["user_email"]
+            );
 
         if (empty($findUser)) {
             $this->middleware->destroySessions();
@@ -182,7 +185,8 @@ class RegularUserController
             exit();
         }
 
-        $fullAccountData = $this->regularUserModel->getAllUserData($findUser[0]["UUID"], $findUser[0]["user_email"]);
+        $fullAccountData = $this->regularUserModel
+            ->getAllUserData($findUser[0]["UUID"], $findUser[0]["user_email"]);
 
         $_SESSION["userAccount"] = $fullAccountData;
 
@@ -197,7 +201,8 @@ class RegularUserController
 
     public function signupAccount(array $data)
     {
-        $findUser = $this->regularUserModel->getGeneralAccountInformations($data["email"]) ?? null;
+        $findUser = $this->regularUserModel
+            ->getGeneralAccountInformations($data["email"]) ?? null;
 
         if ($findUser) {
             $msg = $this->middleware->getMsg("SIGNUP_ERR");
@@ -217,9 +222,11 @@ class RegularUserController
             die(json_encode($this->messages));
         }
 
-        $findUser = $this->regularUserModel->getGeneralAccountInformations($data["email"]) ?? null;
+        $findUser = $this->regularUserModel
+            ->getGeneralAccountInformations($data["email"]) ?? null;
 
-        $fullAccountData = $this->regularUserModel->getAllUserData($findUser[0]["UUID"], $findUser[0]["user_email"]);
+        $fullAccountData = $this->regularUserModel
+            ->getAllUserData($findUser[0]["UUID"], $findUser[0]["user_email"]);
 
         if (!$this->middleware->setSessionData("userAccount", $fullAccountData)) {
             $msg = $this->middleware->getMsg("LOGIN_ERR");
@@ -227,19 +234,6 @@ class RegularUserController
             die(json_encode($this->messages));
         }
     }
-
-    public function checkIfAccPremium(string $email)
-    {
-        $generalAccData = $this->regularUserModel
-            ->getGeneralAccountInformations($email);
-        $findPremiumAcc = $this->regularUserModel->getPremiumAccountData($generalAccData["UUID"]);
-        if ($findPremiumAcc) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
 
     public function addTask(
         string $UUID,

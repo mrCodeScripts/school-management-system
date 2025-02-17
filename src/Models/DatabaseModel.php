@@ -62,8 +62,10 @@ class DatabaseModel
     }
   }
 
-  public function queryPlaceholderGenerator(array $data, string $condition = "AND"): array
-  {
+  public function queryPlaceholderGenerator(
+    array $data,
+    string $condition = "AND"
+  ): array {
     $placeholders = [];
     $arrayPlaceholders = [];
     $arrayData = [];
@@ -94,13 +96,19 @@ class DatabaseModel
     return $placeholders;
   }
 
-  public function isDataExist(array $searchData, string $tableName, string $condition)
-  {
+  public function isDataExist(
+    array $searchData,
+    string $tableName,
+    string $condition
+  ) {
     if (!$this->isTableExist($tableName)) {
       echo json_encode(["message" => "table does not exist"]);
       return false;
     }
-    $queryPlaceholderGenerator = $this->queryPlaceholderGenerator($searchData, $condition);
+    $queryPlaceholderGenerator = $this->queryPlaceholderGenerator(
+      $searchData,
+      $condition
+    );
     $executionPlaceholders = $queryPlaceholderGenerator["keyPlaceholder1"];
     $queryDataPlaceholders = $queryPlaceholderGenerator["keyPlaceholder3"];
     $query = "SELECT * FROM `{$tableName}` WHERE {$queryDataPlaceholders};";
@@ -113,24 +121,32 @@ class DatabaseModel
     return true;
   }
 
-  public function getAllData(string | array $selectedColumn, array $searchedData, array $tableNames, string $condition = "AND")
-  {
-    $conditionPlaceholders = $this->queryPlaceholderGenerator($searchedData, $condition);
+  public function getAllData(
+    string | array $selectedColumn,
+    array $searchedData,
+    array $tableNames,
+    string $condition = "AND"
+  ) {
+    $conditionPlaceholders = $this->queryPlaceholderGenerator(
+      $searchedData,
+      $condition
+    );
     if ($this->areTableExists($tableNames) === false) {
-      die(json_encode(["SERVER_DB_ERR" => "Table name does not exist in the database."]));
+      die(json_encode([
+        "SERVER_DB_ERR" => "Table name does not exist in the database."
+      ]));
     }
-    if (is_array($selectedColumn)) $selectedColumn = implode(", ", $selectedColumn);
+    if (is_array($selectedColumn)) $selectedColumn =
+      implode(", ", $selectedColumn);
     if (is_array($tableNames)) $tableName = implode(", ", $tableNames);
-    $query = "SELECT {$selectedColumn} FROM {$tableName} WHERE " . "{$conditionPlaceholders["keyPlaceholder3"]};";
-    // echo json_encode($query);
+    $query = "SELECT {$selectedColumn} 
+    FROM {$tableName} WHERE "
+      . "{$conditionPlaceholders["keyPlaceholder3"]};";
     $statement = $this->haveConnection()->prepare($query);
     $statement->execute($conditionPlaceholders["keyPlaceholder1"]);
     $data = $statement->fetchAll();
     return $data;
   }
-
-
-  // $query = "SELECT log_type.log_type_name, log_status.log_status_name, user_logs.log_time WHERE UUID = :UUID;";
 
   public function getAllDatabaseData() {}
 
@@ -139,31 +155,43 @@ class DatabaseModel
   public function setDataInsertion(string $tableName, array $data)
   {
     $placeholders = $this->queryPlaceholderGenerator($data);
-    $query = "INSERT INTO `{$tableName}` (" . implode(", ", array_keys($data)) . ") VALUES (" . $placeholders['keyPlaceholder2'] . ")";
+    $query = "INSERT INTO `{$tableName}` (" . implode(
+      ", ",
+      array_keys($data)
+    ) . ") VALUES (" . $placeholders['keyPlaceholder2'] . ")";
     $statement = $this->haveConnection()->prepare($query);
     return $statement->execute($placeholders['keyPlaceholder1']);
   }
 
-  public function setUpdateInsertion(string $tableName, array $data, array $conditions)
-  {
+  public function setUpdateInsertion(
+    string $tableName,
+    array $data,
+    array $conditions
+  ) {
     $setPlaceholders = $this->queryPlaceholderGenerator($data, ",");
     $conditionPlaceholders = $this->queryPlaceholderGenerator($conditions);
-    $query = "UPDATE `{$tableName}` SET " . $setPlaceholders['keyPlaceholder3'] . " WHERE " . $conditionPlaceholders['keyPlaceholder3'];
+    $query = "UPDATE `{$tableName}` SET " . $setPlaceholders['keyPlaceholder3']
+      . " WHERE " . $conditionPlaceholders['keyPlaceholder3'];
     $statement = $this->haveConnection()->prepare($query);
-    return $statement->execute(array_merge($setPlaceholders['keyPlaceholder1'], $conditionPlaceholders['keyPlaceholder1']));
+    return $statement->execute(array_merge(
+      $setPlaceholders['keyPlaceholder1'],
+      $conditionPlaceholders['keyPlaceholder1']
+    ));
   }
 
-  public function setDeleteData(string $tableName, array $conditions)
-  {
+  public function setDeleteData(
+    string $tableName,
+    array $conditions
+  ) {
     $conditionPlaceholders = $this->queryPlaceholderGenerator($conditions);
-    $query = "DELETE FROM `{$tableName}` WHERE " . $conditionPlaceholders['keyPlaceholder3'];
+    $query = "DELETE FROM `{$tableName}` 
+    WHERE " . $conditionPlaceholders['keyPlaceholder3'];
     $statement = $this->haveConnection()->prepare($query);
     return $statement->execute($conditionPlaceholders['keyPlaceholder1']);
   }
 
   public function setBindedExecution(string $query, ?array $bindData = null)
   {
-    // $placeholder = $this->queryPlaceholderGenerator($bindData)["keyPlaceholder1"];
     $statement = $this->haveConnection()->prepare($query);
     if (!empty($bindData)) {
       foreach ($bindData as $key => $value) {
@@ -205,7 +233,12 @@ class DatabaseModel
   INSERT INTO gender_types (gender_id, gender_name, gender_description) VALUES ('M', 'Male', 'Refers to the male gender'), ('F', 'Female', 'Refers to the female gender'), ('N/A', 'N/A', 'Rather not say');
 
   -- for user roles
-  INSERT INTO user_roles (role_name, role_description) VALUES ("Regular User", "Users with limited access to the application's features."), ("Premium User", "Users with full access to the application's features, which means they are already enrolled or registered as part of the school"), ("Administrator", "The main administrator or manager of the system.");
+  INSERT INTO user_roles (role_name, role_description) VALUES 
+  ("Regular User", "Users with limited access to the application's features."),
+  ("Premium User", "Users with full access to the application's features, which means they are already enrolled or registered as part of the school"),
+  ("Administrator", "The main administrator or manager of the system."),
+  ("Student", "Student of the school, is identified as fully registered and has access to numerous features of the system."),
+  ("Teacher", "The ones who teach studens and has access to student informations and manages classroom-student orientation.");
 
 
   -- for log types and log status
@@ -217,7 +250,14 @@ class DatabaseModel
   INSERT INTO log_type () VALUES
   ("Login", "Accessing of account."),
   ("Logout", "Loggin out of account"),
-  ("Signup", "Creating new account.");
-  ("Unusual Login", "Already logged in?")
+  ("Signup", "Creating new account."),
+  ("Unusual Login", "Already logged in?"),
   ("Password Error", "Wrong password? Is this you?");
+
+  INSERT INTO registration_status (registration_status_name, registration_status_description) VALUES
+  ("Pending", "Not yet approved!"),
+  ("Approved", "Registration has been approved!"),
+  ("Rejected", "Registration has been rejected!"),
+  ("Incomplete", "User did not complete registration!");
+
 */

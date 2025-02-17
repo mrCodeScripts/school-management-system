@@ -92,12 +92,9 @@ if (signup_form) {
     });
 }
 
-
-
-
 if (btn_logout) {
     btn_logout.addEventListener("click", async () => {
-        const _req = await fetch("/logout", { method: "POST" });
+        const _req = await fetch("/api/logout", { method: "POST" });
         if (!_req.ok) {
             console.error("Something went wrong");
         }
