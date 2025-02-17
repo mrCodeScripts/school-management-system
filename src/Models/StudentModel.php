@@ -2,27 +2,27 @@
 
 class StudentModel extends DatabaseModel
 {
-    public function setNewPremiumAcc(array $data)
+    public function setNewPremiumAcc(array $studentData, string $UUID)
     {
-        $query1 = "INSERT INTO 
-            all_registered_users(
-                entity_id, UUID, 
-                register_role, registration_status_id
-            ) VALUES (
-                :entity_id, :UUID,
-                :register_role, :registration_status_id
-            );";
+        $registered_user = [
+            "entity_id" => $studentData["LRN"] ?? null,
+            "UUID" => $UUID ?? null,
+            "register_role" => 4,
+            "registration_status_id" => 1,
+        ];
 
-        $query2 = "INSERT INTO 
-            all_registered_users(
-                LRN, firstname, lastname, age, hometown, current_location
-            ) VALUES (
-                :LRN, :firstname, :lastname, :age, :hometown, :current_location
-            );";
-        $this->setBindedExecution($query1, $data);
+        $registered_user_query = "INSERT INTO all_registered_users 
+            (entity_id, UUID, register_role, registration_status_id)
+            VALUES (:entity_id, :UUID, :register_role, :registration_status_id);";
+        $student_informations = "INSERT INTO registered_students 
+            (LRN, firstname, lastname, age, hometown, current_location)
+            VALUES (:LRN, :firstname, :lastname, :age, :hometown, :current_location);";
+
+        $this->setBindedExecution($registered_user_query, $registered_user);
+        $this->setBindedExecution($student_informations, $studentData);
     }
 
-    public function getGeneralPremiumAccData(string $UUID, int $roleId)
+    public function getGeneralPremiumAccData(string $UUID, int $roleId = 4)
     {
         $query = "SELECT * 
             FROM all_registered_users 

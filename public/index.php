@@ -60,6 +60,35 @@ Router::get(
 	$middleware
 );
 
+Router::get(
+	"/account/access-dashboard/access-student",
+	function (
+		$middleware,
+		$regularUserController
+	) {
+		# check account if it has a premium access
+		# if it has premium access, only receive pin
+		# validate pin.
+		# after validation, set session for the user data
+	},
+	$middleware,
+	$regularUserController
+);
+
+
+Router::get("/account/task-manager", function () {
+	if (empty($_SESSION["userAccount"])) {
+		header("Location: /login");
+	};
+	include __DIR__
+		. "/../src/View/user.dashboards/regular.subdashb/taskmanager.dashb.php";
+	die();
+});
+
+
+
+
+
 Router::get("/account/dashboard", function () {
 	if (empty($_SESSION["userAccount"])) {
 		header("Location: /login");
@@ -121,6 +150,9 @@ Router::post(
 		$middleware,
 		$regularUserController
 	) {
+
+		# BASIC LOGIN AUTHENTICATION ROUTER
+
 		header("Content-Type: application/json");
 		if (!$middleware->isSessionAvailable()) {
 			die(json_encode([
@@ -183,6 +215,9 @@ ROUTER::post(
 		$regularUserController,
 		$middleware,
 	) {
+
+		# SIGNUP AUTHENTICATION ROUTE
+
 		$data = [
 			"firstname" => $_POST["signup-firstname"] ?? null,
 			"lastname" => $_POST["signup-lastname"] ?? null,
@@ -257,11 +292,13 @@ Router::post(
 		$regularUserController,
 		$studentController,
 		$regularUserModel,
+		$studentModel,
 	) {
-		# TODO NOW 
+
+		# STUDENT REIGISTRATION AUTHENTICATION ROUTE
+
 		header("Content-Type: application/json");
 
-		# check if user is not logged in
 		$existingUser = $_SESSION["userAccount"] ?? null;
 		if (empty($existingUser)) {
 			die(json_encode([
@@ -271,23 +308,37 @@ Router::post(
 			]));
 		}
 
-		# collect data from the database
 		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
 		$generalAccData = $regularUserModel->getGeneralAccountInformations($userEmail) ?? null;
-		$findAccPremium = $regularUserController->checkAccPremium($generalAccData[0]["UUID"]) ?? null;
+		$findAccPremium = $studentModel->getGeneralPremiumAccData($generalAccData[0]["UUID"]) ?? null;
 		$UUID = $generalAccData[0]["UUID"];
 
-		# find if account is already a premium account.
 		if (!empty($findAccPremium)) {
 			die(json_encode([
-				"message" => "This account is already a premium account. 
-				Please access account via PIN.",
+				"message" => "This account is already a premium account. Please access account premium features via PIN (If this account is already approved by the addministrators.",
 				"type" => "PREMIUM_REGISTRATION_ERR",
 				"status" => "unsuccessful",
 			]));
 		}
 
-		$studentController->studentFullRegistration($UUID);
+		$student_informations = [
+			"LRN" => $_POST["register_lrn"] ?? null,
+			"firstname" => $_POST["register_firstname"] ?? null,
+			"lastname" => $_POST["register_lastname"] ?? null,
+			"age" => $_POST["register_age"] ?? null,
+			"hometown" => $_POST["register_hometown"] ?? null,
+			"current_location" => $_POST["register_current_location"] ?? null,
+		];
+
+		if ($middleware->isAnyColumnEmpty($student_informations)) {
+			die(json_encode([
+				"message" => "Incomplete data.",
+				"type" => "INCOMPLETE_DATA",
+				"status" => "unsuccessful",
+			]));
+		}
+
+		$studentController->studentFullRegistration($student_informations, $UUID);
 
 		die(json_encode([
 			"message" => "You are now fucking registered.",
@@ -297,39 +348,96 @@ Router::post(
 			"stop_reload" => true,
 			"current_user" => $existingUser["currentAccountBasicInfo"],
 			"general_user_data" => $generalAccData,
-			// "registered_user" => $registered_user,
-			// "student_information" => $student_informations,
 		]));
 	},
 	$middleware,
 	$regularUserController,
 	$studentController,
 	$regularUserModel,
+	$studentModel,
 );
 
-Router::get(
-	"/account/access-dashboard/access-student",
+Router::post(
+	"/account/auth/teacher/enr",
 	function (
 		$middleware,
-		$regularUserController
+		$regularUserController,
+		$teacherController,
+		$regularUserModel,
+		$studentModel,
 	) {
-		# check account if it has a premium access
-		# if it has premium access, only receive pin
-		# validate pin.
-		# after validation, set session for the user data
+
+		# TEACHER REIGISTRATION AUTHENTICATION ROUTE
+		header("Content-Type: application/json");
+
+		$existingUser = $_SESSION["userAccount"] ?? null;
+		if (empty($existingUser)) {
+			die(json_encode([
+				"message" => "You are not logged in yet bitch!",
+				"type" => "PREMIUM_REGISTRATION_ERR",
+				"status" => "unsuccessful",
+			]));
+		}
+
+		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
+		$generalAccData = $regularUserModel->getGeneralAccountInformations($userEmail) ?? null;
+		$findAccPremium = $studentModel->getGeneralPremiumAccData($generalAccData[0]["UUID"]) ?? null;
+		$UUID = $generalAccData[0]["UUID"];
+
+		if (!empty($findAccPremium)) {
+			die(json_encode([
+				"message" => "This account is already a premium account. Please access account premium features via PIN (If this account is already approved by the addministrators.",
+				"type" => "PREMIUM_REGISTRATION_ERR",
+				"status" => "unsuccessful",
+			]));
+		}
+
+		$teacher_informations = [
+			"professional_id" => $_POST["register_lrn"] ?? null,
+			"firstname" => $_POST["register_firstname"] ?? null,
+			"lastname" => $_POST["register_lastname"] ?? null,
+			"age" => $_POST["register_age"] ?? null,
+			"hometown" => $_POST["register_hometown"] ?? null,
+			"current_location" => $_POST["register_current_location"] ?? null,
+		];
+
+		if ($middleware->isAnyColumnEmpty($teacher_informations)) {
+			die(json_encode([
+				"message" => "Incomplete data.",
+				"type" => "INCOMPLETE_DATA",
+				"status" => "unsuccessful",
+			]));
+		}
+
+		$teacherController->teacherFullRegistration($teacher_informations, $UUID);
+
+		die(json_encode([
+			"message" => "You are now fucking registered.",
+			"type" => "TEACHER_REGISTRATION_SUCCESS",
+			"status" => "successful",
+			"refresh" => true,
+			"stop_reload" => true,
+			"current_user" => $existingUser["currentAccountBasicInfo"],
+			"general_user_data" => $generalAccData,
+		]));
 	},
 	$middleware,
-	$regularUserController
+	$regularUserController,
+	$teacherController,
+	$regularUserModel,
+	$teacherModel,
 );
 
-Router::get("/account/task-manager", function () {
-	if (empty($_SESSION["userAccount"])) {
-		header("Location: /login");
-	};
-	include __DIR__
-		. "/../src/View/user.dashboards/regular.subdashb/taskmanager.dashb.php";
-	die();
-});
+
+
+
+
+
+
+
+
+
+
 
 
 
