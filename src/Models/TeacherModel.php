@@ -2,12 +2,12 @@
 
 class TeacherModel extends DatabaseModel
 {
-   public function setNewPremiumAcc(array $studentData, string $UUID)
+   public function setNewPremiumAcc(array $teacherData, string $UUID)
    {
       $registered_user = [
-         "entity_id" => $studentData["LRN"] ?? null,
+         "entity_id" => $teacherData["professional_id"] ?? null,
          "UUID" => $UUID ?? null,
-         "register_role" => 4,
+         "register_role" => 5,
          "registration_status_id" => 1,
       ];
 
@@ -16,10 +16,10 @@ class TeacherModel extends DatabaseModel
             VALUES (:entity_id, :UUID, :register_role, :registration_status_id);";
       $student_informations = "INSERT INTO registered_teachers 
             (professional_id, firstname, lastname, age, hometown, current_location)
-            VALUES (:LRN, :firstname, :lastname, :age, :hometown, :current_location);";
+            VALUES (:professional_id, :firstname, :lastname, :age, :hometown, :current_location);";
 
       $this->setBindedExecution($registered_user_query, $registered_user);
-      $this->setBindedExecution($student_informations, $studentData);
+      $this->setBindedExecution($student_informations, $teacherData);
    }
 
    public function getGeneralPremiumAccData(string $UUID, int $roleId = 4)

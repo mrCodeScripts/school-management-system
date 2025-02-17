@@ -393,7 +393,7 @@ Router::post(
 		}
 
 		$teacher_informations = [
-			"professional_id" => $_POST["register_lrn"] ?? null,
+			"professional_id" => $_POST["register_professional_id"] ?? null,
 			"firstname" => $_POST["register_firstname"] ?? null,
 			"lastname" => $_POST["register_lastname"] ?? null,
 			"age" => $_POST["register_age"] ?? null,

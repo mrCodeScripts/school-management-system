@@ -14,7 +14,7 @@ class TeacherController
    public function teacherFullRegistration(array $studentInfo, string $UUID)
    {
       $student_informations = [
-         "LRN" => $this->middleware->stringSanitization($studentInfo["LRN"]),
+         "professional_id" => $this->middleware->stringSanitization($studentInfo["professional_id"]),
          "firstname" => $this->middleware->stringSanitization($studentInfo["firstname"]),
          "lastname" => $this->middleware->stringSanitization($studentInfo["lastname"]),
          "age" => $this->middleware->stringSanitization($studentInfo["age"]),
