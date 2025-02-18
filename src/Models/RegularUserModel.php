@@ -279,6 +279,7 @@ class RegularUserModel extends DatabaseModel
             "task_priority" => $task["task_priority_name"],
             "task_description" => $task["task_description"],
             "task_status" => $task["task_status_name"],
+            "task_last_mofied" => $task["task_last_modified"] ? $this->middleware->getModifiedTime($task["task_last_modified"]) : null,
             "task_raw_data" => [
                "raw_task_status_id" => $task["task_status_id"],
                "raw_task_deadline" => $task["task_deadline"],
@@ -286,6 +287,7 @@ class RegularUserModel extends DatabaseModel
                "raw_task_priority_id" => $task["task_priority_id"],
                "raw_task_type_id" => $task["task_type_id"],
                "raw_task_completion_date" => $task["task_completion"] ?? null,
+               "raw_task_last_modified" => $task["task_last_modified"],
             ]
          ];
       }

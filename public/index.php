@@ -570,6 +570,9 @@ Router::post(
 		$regularUserModel,
 	) {
 		# TODO
+
+		header("Content-Type: application/json");
+
 		$existingUser = $_SESSION["userAccount"] ?? null;
 		if (empty($existingUser)) {
 			die(json_encode([
@@ -578,7 +581,6 @@ Router::post(
 				"status" => "unsuccessful",
 			]));
 		}
-
 		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
 		$generalAccData = $regularUserModel->getGeneralAccountInformations($userEmail) ?? null;
 		$UUID = $generalAccData[0]["UUID"];

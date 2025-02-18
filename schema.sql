@@ -256,7 +256,8 @@ CREATE TABLE `tasks` (
   `task_description` varchar (64) NULL,
   `task_created_on` datetime DEFAULT CURRENT_TIMESTAMP,
   `task_status_id` int (3) NOT NULL,
-  `task_completion` datetime NULL
+  `task_completion` datetime NULL,
+  `task_last_modified` datetime NULL
 );
 
 ALTER TABLE `tasks`  ADD FOREIGN KEY (`task_type`) REFERENCES `task_types` (`task_type_id`);
