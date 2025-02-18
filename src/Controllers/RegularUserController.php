@@ -163,6 +163,7 @@ class RegularUserController
         session_destroy();
     }
 
+    # UPDATE ALL DATA OF THE ACCOUNT
     public function updateAccountInformation()
     {
         $currentUserData = $this->middleware->getSessionData("userAccount");
@@ -170,8 +171,6 @@ class RegularUserController
         if (!$currentUserData) {
             $this->middleware->destroySessions();
             $this->middleware->unsetSessions();
-            ## ADDMESSGE HERE
-            // die(json_encode[""])
         };
 
         $findUser = $this->regularUserModel
@@ -189,14 +188,6 @@ class RegularUserController
             ->getAllUserData($findUser[0]["UUID"], $findUser[0]["user_email"]);
 
         $_SESSION["userAccount"] = $fullAccountData;
-
-        /*
-        if (!$this->middleware->setSessionData("userAccount", $fullAccountData)) {
-            $msg = $this->middleware->getMsg("LOGIN_ERR");
-            $this->messages[$msg["messageName"]] = $msg["message"][2];
-            die(json_encode($this->messages));
-        }
-        */
     }
 
     public function signupAccount(array $data)
@@ -235,19 +226,199 @@ class RegularUserController
         }
     }
 
-    public function addTask(
-        string $UUID,
-        string $taskName,
-        string $taskDescription,
-        string $status,
-        string $deadline,
-    ) {
-        # filter the tasks
-        # find if the task id already exist in the database
-        # if it already exist in the
+    ## TASKS
+    public function createTask($taskData)
+    {
+        $filterData = [
+            "task_id" => $this->middleware->stringSanitization($taskData["task_id"]),
+            "UUID" => $this->middleware->stringSanitization($taskData["UUID"]),
+            "task_title" => $this->middleware->stringSanitization($taskData["task_title"]),
+            "task_type" => $taskData["task_type"],
+            "task_deadline" => $this->middleware->stringSanitization($taskData["task_deadline"]),
+            "task_priority" => $this->middleware->stringSanitization($taskData["task_priority"]),
+            "task_description" => $this->middleware->stringSanitization($taskData["task_description"]),
+            "task_status_id" => 1,
+        ];
+
+        $this->regularUserModel->setNewTask($filterData);
     }
 
-    public function removeTask() {}
-    public function markFinishedTask() {}
-    public function addProfilePicture() {}
+    public function deleteTask($taskData)
+    {
+        $getTask = $this->regularUserModel->getTask(
+            $taskData["UUID"],
+            $taskData["task_id"],
+        );
+        if (!$getTask) {
+            die(json_encode([
+                "message" => "Task does not exist.",
+                "type" => "TASK_MANAGER_ERR",
+                "status" => "unsuccessful",
+            ]));
+        }
+
+        if (!$this->regularUserModel->deleteTask($taskData)) {
+            die(json_encode([
+                "message" => "Failed to delete task",
+                "type" => "TASK_MANAGER_ERR",
+                "status" => "unsuccessful",
+            ]));
+        }
+    }
+
+    public function updateTaskList(
+        string $UUID,
+        string $prefferedOrder = "task_created_on",
+        string $sortDirection = "DESC",
+    ) {
+        $sortingPhrase = "{$prefferedOrder} {$sortDirection}";
+        $fetchedTasks = $this->regularUserModel->getAllTask(
+            $UUID,
+            $sortingPhrase
+        );
+        $_SESSION["userAccount"]["currentAccountTaskList"] = [
+            "prefferedTaskListOrder" => $sortingPhrase,
+            "userTaskList" => [
+                ...$this->regularUserModel->filterFetchedTasks($fetchedTasks),
+            ]
+        ];
+    }
+
+    public function completedTask($data)
+    {
+        $getTask = $this->regularUserModel->getTask(
+            $data["UUID"],
+            $data["task_id"],
+        );
+
+        if (!$getTask) {
+            die(json_encode([
+                "message" => "Task does not exist.",
+                "type" => "TASK_MANAGER_ERR",
+                "status" => "unsuccessful",
+            ]));
+        }
+
+        if ($getTask[0]["task_status_id"] === 2) {
+            die(json_encode([
+                "message" => "Task is already set to COMPLETED",
+                "type" => "TASK_MANAGER_ERR",
+                "status" => "unsuccessful",
+            ]));
+        }
+
+        if (!$this->regularUserModel->setCompleteTasks(
+            $data["UUID"],
+            $data["task_id"],
+            $this->middleware->getCurrentTime()
+        )) {
+            # TODO
+            die(json_encode([
+                "message" => "Failed to set task complete",
+                "type" => "TASK_MANAGER_ERR",
+                "status" => "unsuccessful",
+            ]));
+        }
+    }
+
+    public function changeTaskTitle($data)
+    {
+        # TODO
+        $getTask = $this->regularUserModel->getTask(
+            $data["UUID"],
+            $data["task_id"],
+        );
+
+        if (!$getTask) {
+            die(json_encode([
+                "message" => "Task does not exist.",
+                "type" => "TASK_MANAGER_ERR",
+                "status" => "unsuccessful",
+            ]));
+        }
+
+        if (!$this->regularUserModel->changeTaskTitle(
+            $data,
+            $this->middleware->getCurrentTime()
+        )) {
+            die(json_encode([
+                "message" => "Failed to change task title.",
+                "type" => "TASK_MANAGER_ERR",
+                "status" => "unsuccessful"
+            ]));
+        }
+    }
+
+    public function changeTaskDescription()
+    {
+        # TODO
+    }
+
+    public function changeTaskDeadline()
+    {
+        # TODO
+    }
+
+    public function changeTaskPriority()
+    {
+        # TODO
+    }
+
+
+    ## FILES
+    public function uploadFile()
+    {
+        # TODO
+    }
+
+    public function downloadFile()
+    {
+        # TODO
+    }
+
+    public function listFile()
+    {
+        # TODO
+    }
+
+    public function deleteFile()
+    {
+        # TODO 
+    }
+
+    public function renameFile()
+    {
+        # TODO
+    }
+
+    public function metadataFile()
+    {
+        # TODO
+    }
+
+    ## INBOX
+    public function createInbox()
+    {
+        # TODO
+    }
+
+    public function deleteInbox()
+    {
+        # TODO
+    }
+
+    public function openInbox()
+    {
+        # TODO
+    }
+
+    public function markReadInbox()
+    {
+        # TODO
+    }
+
+    public function replyInbox()
+    {
+        # TODO
+    }
 };

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 include_once __DIR__ . "/../vendor/autoload.php";
 require_once __DIR__ . "/Config.php";
@@ -17,12 +18,12 @@ require_once __DIR__ . "/Router.php";
 Router::init();
 $middleware = new Middleware();
 $adminController = new AdminController();
-$regularUserController = new RegularUserController();
-$studentController = new StudentController();
-$teacherController = new TeacherController();
 $adminModel = new AdminModel();
+$regularUserController = new RegularUserController();
 $regularUserModel = new RegularUserModel();
+$studentController = new StudentController();
 $studentModel = new StudentModel();
+$teacherController = new TeacherController();
 $teacherModel = new TeacherModel();
 $middleware->initiateSessionCookies();
 $middleware->startSession();

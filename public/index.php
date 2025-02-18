@@ -76,18 +76,26 @@ Router::get(
 );
 
 
-Router::get("/account/task-manager", function () {
-	if (empty($_SESSION["userAccount"])) {
-		header("Location: /login");
-	};
-	include __DIR__
-		. "/../src/View/user.dashboards/regular.subdashb/taskmanager.dashb.php";
-	die();
-});
-
-
-
-
+Router::get(
+	"/account/task-manager",
+	function (
+		$regularUserController,
+		$regularUserModel
+	) {
+		if (empty($_SESSION["userAccount"])) {
+			header("Location: /login");
+		}
+		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
+		$generalAccData = $regularUserModel->getGeneralAccountInformations($userEmail) ?? null;
+		$UUID = $generalAccData[0]["UUID"];
+		$regularUserController->updateTaskList($UUID, "task_");
+		include __DIR__
+			. "/../src/View/user.dashboards/regular.subdashb/taskmanager.dashb.php";
+		die();
+	},
+	$regularUserController,
+	$regularUserModel
+);
 
 Router::get("/account/dashboard", function () {
 	if (empty($_SESSION["userAccount"])) {
@@ -97,43 +105,7 @@ Router::get("/account/dashboard", function () {
 		. "/../src/View/user.dashboards/regular.subdashb/account.dashboard.php";
 	die();
 });
-
-Router::get("/acc/personal-informations", function () {
-	include __DIR__
-		. "/../src/View/user.dashboards/regular.dashboard.php";
-	die();
-});
-
-Router::get("/acc/my-files", function () {
-	include __DIR__
-		. "/../src/View/user.dashboards/regular.subdashb/myfiles.dashb.php";
-	die();
-});
-
-Router::get("/dashb/teacher", function () {
-	include __DIR__
-		. "/../src/View/user.dashboards/teacher.dashboard.php";
-	die();
-});
-
-Router::get("/dashb/student", function () {
-	include __DIR__
-		. "/../src/View/user.dashboards/student.dashboard.php";
-	die();
-});
-
-Router::get("/dashb/admin", function () {
-	include __DIR__
-		. "/../src/View/user.dashboards/admin.dashboard.php";
-	die();
-});
 # ===================================================== #
-
-
-
-
-
-
 
 
 
@@ -150,9 +122,7 @@ Router::post(
 		$middleware,
 		$regularUserController
 	) {
-
 		# BASIC LOGIN AUTHENTICATION ROUTER
-
 		header("Content-Type: application/json");
 		if (!$middleware->isSessionAvailable()) {
 			die(json_encode([
@@ -198,6 +168,8 @@ Router::post(
 		$middleware,
 		$regularUserController
 	) {
+		# LOGOUT AUTHENTICATION ROUTER
+		header("Content-Type: application/json");
 		$regularUserController->logoutAccount();
 		die(json_encode([
 			"message" => "Successfuly logged out account!",
@@ -217,6 +189,8 @@ ROUTER::post(
 	) {
 
 		# SIGNUP AUTHENTICATION ROUTE
+
+		header("Content-Type: application/json");
 
 		$data = [
 			"firstname" => $_POST["signup-firstname"] ?? null,
@@ -310,8 +284,8 @@ Router::post(
 
 		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
 		$generalAccData = $regularUserModel->getGeneralAccountInformations($userEmail) ?? null;
-		$findAccPremium = $studentModel->getGeneralPremiumAccData($generalAccData[0]["UUID"]) ?? null;
 		$UUID = $generalAccData[0]["UUID"];
+		$findAccPremium = $regularUserModel->findPremiumRegsiteredAccount($UUID) ?? null;
 
 		if (!empty($findAccPremium)) {
 			die(json_encode([
@@ -364,10 +338,11 @@ Router::post(
 		$regularUserController,
 		$teacherController,
 		$regularUserModel,
-		$studentModel,
+		$teacherModel,
 	) {
 
 		# TEACHER REIGISTRATION AUTHENTICATION ROUTE
+
 		header("Content-Type: application/json");
 
 		$existingUser = $_SESSION["userAccount"] ?? null;
@@ -381,8 +356,8 @@ Router::post(
 
 		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
 		$generalAccData = $regularUserModel->getGeneralAccountInformations($userEmail) ?? null;
-		$findAccPremium = $studentModel->getGeneralPremiumAccData($generalAccData[0]["UUID"]) ?? null;
 		$UUID = $generalAccData[0]["UUID"];
+		$findAccPremium = $regularUserModel->findPremiumRegsiteredAccount($UUID) ?? null;
 
 		if (!empty($findAccPremium)) {
 			die(json_encode([
@@ -428,19 +403,405 @@ Router::post(
 	$teacherModel,
 );
 
+# TASK MANAGER REQUEST ROUTES
+Router::post(
+	"/account/task/create",
+	function (
+		$middleware,
+		$regularUserController,
+		$regularUserModel,
+	) {
+		# TODO (still on development) -- overall: DONE
+		header("Content-Type: application/json");
 
+		$existingUser = $_SESSION["userAccount"] ?? null;
+		if (empty($existingUser)) {
+			die(json_encode([
+				"message" => "You are not logged in yet bitch!",
+				"type" => "TASK_MANAGER_ERR",
+				"status" => "unsuccessful",
+			]));
+		}
 
+		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
+		$generalAccData = $regularUserModel
+			->getGeneralAccountInformations($userEmail) ?? null;
+		$UUID = $generalAccData[0]["UUID"];
 
+		$newTask = [
+			"task_id" => $middleware->getUUID(),
+			"UUID" => $UUID,
+			"task_title" => $_POST["task_title"],
+			"task_type" => $_POST["task_type"] ?? 1, # regular task - id:1
+			"task_deadline" => $_POST["task_deadline"],
+			"task_priority" => $_POST["task_priority"],
+			"task_description" => $_POST["task_description"],
+		];
 
+		if ($middleware->isAnyColumnEmpty($newTask)) {
+			die(json_encode([
+				"message" => "Incomplete data.",
+				"type" => "INCOMPLETE_DATA",
+				"status" => "unsuccessful",
+			]));
+		}
 
+		$regularUserController->createTask($newTask);
+		$regularUserController->updateTaskList($UUID);
 
+		die(json_encode([
+			"message" => "Successfully created task.",
+			"type" => "TASK_CREATE_SUCCESS",
+			"status" => "successful",
+			$_SESSION["userAccount"],
+		]));
+	},
+	$middleware,
+	$regularUserController,
+	$regularUserModel,
+);
 
+Router::post(
+	"/account/task/delete",
+	function (
+		$middleware,
+		$regularUserController,
+		$regularUserModel,
+	) {
+		# TODO (still on development) -- overal: DONE
+		header("Content-Type: application/json");
 
+		$existingUser = $_SESSION["userAccount"] ?? null;
+		if (empty($existingUser)) {
+			die(json_encode([
+				"message" => "You are not logged in yet bitch!",
+				"type" => "TASK_MANAGER_ERR",
+				"status" => "unsuccessful",
+			]));
+		}
 
+		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
+		$generalAccData = $regularUserModel
+			->getGeneralAccountInformations($userEmail) ?? null;
+		$UUID = $generalAccData[0]["UUID"];
 
+		$deleteTask = [
+			"task_id" => $_POST["task_id"],
+			"UUID" => $UUID,
+		];
 
+		if ($middleware->isAnyColumnEmpty($deleteTask)) {
+			die(json_encode([
+				"message" => "Incomplete data.",
+				"type" => "INCOMPLETE_DATA",
+				"status" => "unsuccessful",
+			]));
+		}
 
+		$regularUserController->deleteTask($deleteTask);
+		$regularUserController->updateTaskList($UUID);
 
+		die(json_encode([
+			"message" => "Successfully deleted task.",
+			"type" => "TASK_DELETE_SUCCESS",
+			"status" => "successful"
+		]));
+	},
+	$middleware,
+	$regularUserController,
+	$regularUserModel,
+);
+
+Router::post(
+	"/account/task/completed",
+	function (
+		$middleware,
+		$regularUserController,
+		$regularUserModel,
+	) {
+		# TODO
+		header("Content-Type: application/json");
+		$existingUser = $_SESSION["userAccount"] ?? null;
+		if (empty($existingUser)) {
+			die(json_encode([
+				"message" => "You are not logged in yet bitch!",
+				"type" => "TASK_MANAGER_ERR",
+				"status" => "unsuccessful",
+			]));
+		}
+
+		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
+		$generalAccData = $regularUserModel
+			->getGeneralAccountInformations($userEmail) ?? null;
+		$UUID = $generalAccData[0]["UUID"];
+
+		$completedTask = [
+			"task_id" => $_POST["task_id"],
+			"UUID" => $UUID,
+		];
+
+		if ($middleware->isAnyColumnEmpty($completedTask)) {
+			die(json_encode([
+				"message" => "Incomplete data.",
+				"type" => "INCOMPLETE_DATA",
+				"status" => "unsuccessful",
+			]));
+		}
+
+		$regularUserController->completedTask($completedTask);
+		$regularUserController->updateTaskList($UUID);
+
+		die(json_encode([
+			"message" => "Successfully set task as COMPLETED. Congratulations.",
+			"type" => "TASK_COMPLETE_SUCCESS",
+			"status" => "successful"
+		]));
+	},
+	$middleware,
+	$regularUserController,
+	$regularUserModel,
+);
+
+Router::post(
+	"/account/task/c/title",
+	function (
+		$middleware,
+		$regularUserController,
+		$regularUserModel,
+	) {
+		# TODO
+		$existingUser = $_SESSION["userAccount"] ?? null;
+		if (empty($existingUser)) {
+			die(json_encode([
+				"message" => "You are not logged in yet bitch!",
+				"type" => "TASK_MANAGER_ERR",
+				"status" => "unsuccessful",
+			]));
+		}
+
+		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
+		$generalAccData = $regularUserModel->getGeneralAccountInformations($userEmail) ?? null;
+		$UUID = $generalAccData[0]["UUID"];
+
+		$newTaskTitle = [
+			"task_id" => $_POST["task_id"],
+			"UUID" => $UUID,
+			"task_title" => $_POST["new_task_title"]
+		];
+
+		if ($middleware->isAnyColumnEmpty($newTaskTitle)) {
+			die(json_encode([
+				"message" => "Incomplete data.",
+				"type" => "INCOMPLETE_DATA",
+				"status" => "unsuccessful",
+			]));
+		}
+
+		$regularUserController->changeTaskTitle($newTaskTitle);
+		$regularUserController->updateTaskList($UUID);
+
+		die(json_encode([
+			"message" => "Successfully changed task title.",
+			"type" => "TASK_MODIF_SUCCESS",
+			"status" => "successful"
+		]));
+	},
+	$middleware,
+	$regularUserController,
+	$regularUserModel,
+);
+
+Router::post(
+	"/account/task/c/desc",
+	function (
+		$middleware,
+		$regularUserController,
+		$regularUserModel,
+	) {
+		# TODO
+		$existingUser = $_SESSION["userAccount"] ?? null;
+		if (empty($existingUser)) {
+			die(json_encode([
+				"message" => "You are not logged in yet bitch!",
+				"type" => "TASK_MANAGER_ERR",
+				"status" => "unsuccessful",
+			]));
+		}
+
+		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
+		$generalAccData = $regularUserModel->getGeneralAccountInformations($userEmail) ?? null;
+		$UUID = $generalAccData[0]["UUID"];
+
+		$newTaskDesc = [
+			"task_id" => $_POST["task_id"],
+			"UUID" => $UUID,
+			"task_desciption" => $_POST["new_task_description"]
+		];
+
+		if ($middleware->isAnyColumnEmpty($newTaskDesc)) {
+			die(json_encode([
+				"message" => "Incomplete data.",
+				"type" => "INCOMPLETE_DATA",
+				"status" => "unsuccessful",
+			]));
+		}
+
+		$regularUserController->changeTaskDescription($newTaskDesc);
+
+		die(json_encode([
+			"message" => "Successfully changed task description.",
+			"type" => "TASK_MODIF_SUCCESS",
+			"status" => "successful"
+		]));
+	},
+	$middleware,
+	$regularUserController,
+	$regularUserModel,
+);
+
+Router::post(
+	"/account/task/c/endt",
+	function (
+		$middleware,
+		$regularUserController,
+		$regularUserModel,
+	) {
+		# TODO
+		$existingUser = $_SESSION["userAccount"] ?? null;
+		if (empty($existingUser)) {
+			die(json_encode([
+				"message" => "You are not logged in yet bitch!",
+				"type" => "TASK_MANAGER_ERR",
+				"status" => "unsuccessful",
+			]));
+		}
+
+		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
+		$generalAccData = $regularUserModel->getGeneralAccountInformations($userEmail) ?? null;
+		$UUID = $generalAccData[0]["UUID"];
+
+		$newTaskEndt = [
+			"task_id" => $_POST["task_id"],
+			"UUID" => $UUID,
+			"task_deadline" => $_POST["new_task_deadline"]
+		];
+
+		if ($middleware->isAnyColumnEmpty($newTaskEndt)) {
+			die(json_encode([
+				"message" => "Incomplete data.",
+				"type" => "INCOMPLETE_DATA",
+				"status" => "unsuccessful",
+			]));
+		}
+
+		$regularUserController->changeTaskDeadline($newTaskEndt);
+
+		die(json_encode([
+			"message" => "Successfully changed task deadline.",
+			"type" => "TASK_MODIF_SUCCESS",
+			"status" => "successful"
+		]));
+	},
+	$middleware,
+	$regularUserController,
+	$regularUserModel,
+);
+
+Router::post(
+	"/account/task/c/prior",
+	function (
+		$middleware,
+		$regularUserController,
+		$regularUserModel,
+	) {
+		# TODO
+		$existingUser = $_SESSION["userAccount"] ?? null;
+		if (empty($existingUser)) {
+			die(json_encode([
+				"message" => "You are not logged in yet bitch!",
+				"type" => "TASK_MANAGER_ERR",
+				"status" => "unsuccessful",
+			]));
+		}
+
+		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
+		$generalAccData = $regularUserModel->getGeneralAccountInformations($userEmail) ?? null;
+		$UUID = $generalAccData[0]["UUID"];
+
+		$newTaskPrior = [
+			"task_id" => $_POST["task_id"],
+			"UUID" => $UUID,
+			"task_priority" => $_POST["new_task_priority"]
+		];
+
+		if ($middleware->isAnyColumnEmpty($newTaskPrior)) {
+			die(json_encode([
+				"message" => "Incomplete data.",
+				"type" => "INCOMPLETE_DATA",
+				"status" => "unsuccessful",
+			]));
+		}
+
+		$regularUserController->changeTaskPriority($newTaskPrior);
+
+		die(json_encode([
+			"message" => "Successfully changed task priority level.",
+			"type" => "TASK_MODIF_SUCCESS",
+			"status" => "successful"
+		]));
+	},
+	$middleware,
+	$regularUserController,
+	$regularUserModel,
+);
+
+# FILE SYSTEM REQUEST ROUTES
+Router::post("/account/files/upload", function () {
+	# TODO
+});
+
+Router::post("/account/files/download", function () {
+	# TODO
+});
+
+Router::post("/account/files/list", function () {
+	# TODO
+});
+
+Router::post("/account/files/delete", function () {
+	# TODO
+});
+
+Router::post("/account/files/rename", function () {
+	# TODO
+});
+
+Router::post("/account/files/metadata", function () {
+	# TODO
+});
+
+# INBOX REQUEST ROUTES
+Router::post("/account/inbox/create", function () {
+	# TODO
+});
+
+Router::post("/account/inbox/delete", function () {
+	# TODO
+});
+
+Router::get("/account/inbox/open", function () {
+	# TODO
+});
+
+Router::post("/account/inbox/mark-read", function () {
+	# TODO
+});
+
+Router::post("/account/inbox/reply", function () {
+	# TODO
+});
+
+# =========================================================================
 
 
 

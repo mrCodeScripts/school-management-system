@@ -2,6 +2,7 @@
 $CSS = Config::generateResourcePack("CSSFiles");
 $ICONS = Config::generateResourcePack("SVGIcons");
 $JS = Config::generateResourcePack("JSFiles");
+
 ?>
 
 <!DOCTYPE html>

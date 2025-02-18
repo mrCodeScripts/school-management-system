@@ -140,6 +140,14 @@ class Middleware
         return $timeFormat ?? null;
     }
 
+    public function getCurrentTime($timeZone = "Asia/Taipei"): string
+    {
+        $dTimeZone = new DateTimeZone($timeZone);
+        $taskCompleted = new DateTime("now", $dTimeZone);
+        $now = $taskCompleted->format("Y-m-d h-i-s");
+        return $now;
+    }
+
     public function getPasswordHashing(
         string $password,
     ): string | null {

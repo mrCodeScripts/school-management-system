@@ -22,7 +22,7 @@ class TeacherModel extends DatabaseModel
       $this->setBindedExecution($student_informations, $teacherData);
    }
 
-   public function getGeneralPremiumAccData(string $UUID, int $roleId = 4)
+   public function getGeneralPremiumAccData(string $UUID, int $roleId = 5)
    {
       $query = "SELECT * 
             FROM all_registered_users 
@@ -41,6 +41,16 @@ class TeacherModel extends DatabaseModel
             WHERE LRN = :LRN;";
       return $this->setBindedExecution($query, [
          "LRN" => $LRN,
-      ]);
+      ])->fetchAll();
+   }
+
+   public function getRegisteredTeacherInformations(string $professional_id)
+   {
+      $query = "SELECT *
+            FROM registered_teachers  
+            WHERE professional_id = :professional_id;";
+      return $this->setBindedExecution($query, [
+         "professional_id" => $professional_id,
+      ])->fetchAll();
    }
 };

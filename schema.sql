@@ -228,6 +228,93 @@ CREATE TABLE `user_roles` (
   `role_description` text DEFAULT null
 );
 
+CREATE TABLE `task_types` (
+  `task_type_id` int (3) PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  `task_type_name` varchar (64) UNIQUE NOT NULL,
+  `task_type_description` text DEFAULT NULL
+);
+
+CREATE TABLE `task_priorities` (
+  `task_priority_id` int (3) PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  `task_priority_name` varchar (64) UNIQUE NOT NULL,
+  `task_priority_description` text NOT NULL
+);
+
+CREATE TABLE `task_status` (
+  `task_status_id` int (3) PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  `task_status_name` varchar (64) NOT NULL,
+  `task_status_description` text NULL
+);
+
+CREATE TABLE `tasks` (
+  `task_id` varchar (64) PRIMARY KEY NOT NULL,
+  `UUID` varchar (64) NOT NULL,
+  `task_title` varchar (64) NOT NULL,
+  `task_type` int(3) NOT NULL,
+  `task_deadline` varchar (30) NOT NULL,
+  `task_priority` int (3) NOT NULL,
+  `task_description` varchar (64) NULL,
+  `task_created_on` datetime DEFAULT CURRENT_TIMESTAMP,
+  `task_status_id` int (3) NOT NULL,
+  `task_completion` datetime NULL
+);
+
+ALTER TABLE `tasks`  ADD FOREIGN KEY (`task_type`) REFERENCES `task_types` (`task_type_id`);
+
+ALTER TABLE `tasks`  ADD FOREIGN KEY (`task_priority`) REFERENCES `task_priorities` (`task_priority_id`);
+
+ALTER TABLE `tasks`  ADD FOREIGN KEY (`UUID`) REFERENCES `user_accounts` (`UUID`);
+
+ALTER TABLE `tasks` ADD FOREIGN KEY (`task_status_id`) REFERENCES `task_status` (`task_status_id`);
+
+INSERT INTO `task_types` (`task_type_name`, `task_type_description`) VALUES
+("Normal Tasks", "shit"),
+("Personal Tasks", "personal matter fo shit"),
+("Project Tasks", "project shit");
+
+INSERT INTO `task_priorities` (`task_priority_name`, `task_priority_description`) VALUES
+("Very Important", "most imortant shit to do"),
+("Important", "and important matter"),
+("Less Important", "less importannt"),
+("Useless", "sure is this useless");
+
+INSERT INTO `task_status` (`task_status_name`, `task_status_description`) VALUES
+("IN-PROGRESS", "Still in development or in process of completion."),
+("COMPLETED", "Finished development."),
+("FAILED", "Failed in development or in process of completion. Can be due to tight schedules.");
+
+CREATE TABLE `user_inbox` (
+  `inbox_id` varchar (64) NOT NULL PRIMARY KEY,
+  `from_UUID` varchar (64) NOT NULL,
+  `inbox_title` varchar (100) NOT NULL,
+  `inbox_description` text NULL,
+  `inbox_created_on` datetime DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE `all_sent_user_inbox` (
+  `inbox_id` varchar (64) NOT NULL,
+  `to_UUID` varchar (64) NOT NULL,
+  `inbox_sent_date` datetime DEFAULT CURRENT_TIMESTAMP,
+  `inbox_status` int (3) NOT NULL
+);
+
+CREATE TABLE `all_user_inbox_replies` (
+  `inbox_reply_id` varchar (64) PRIMARY KEY NOT NULL,
+  `inbox_id` varchar (64) NOT NULL,
+  `from_UUID` varchar (64) NOT NULL,
+  `inbox_reply_title` varchar (64) NOT NULL,
+  `inbox_reply_message` text NOT NULL,
+  `inbox_reply_senton` datetime DEFAULT CURRENT_TIMESTAMP
+); 
+
+ALTER TABLE `all_user_inbox_replies` ADD FOREIGN KEY (`inbox_id`) REFERENCES `user_inbox` (`inbox_id`);
+
+
+ALTER TABLE `all_sent_user_inbox` ADD FOREIGN KEY (`to_UUID`) REFERENCES `user_accounts` (`UUID`);
+ALTER TABLE `all_sent_user_inbox` ADD FOREIGN KEY (`inbox_id`) REFERENCES `user_inbox` (`inbox_id`);
+ALTER TABLE `user_inbox` ADD FOREIGN KEY (`from_UUID`) REFERENCES `user_accounts` (`UUID`);
+
+
 ALTER TABLE `all_registered_users` ADD FOREIGN KEY (`UUID`) REFERENCES `user_accounts` (`UUID`);
 
 ALTER TABLE `all_registered_users` ADD FOREIGN KEY (`register_role`) REFERENCES `user_roles` (`role_id`);
@@ -303,34 +390,34 @@ ALTER TABLE `user_logs` ADD CONSTRAINT `user_logs_ibfk_2` FOREIGN KEY (`log_type
 ALTER TABLE `user_logs` ADD CONSTRAINT `user_logs_ibfk_3` FOREIGN KEY (`log_status`) REFERENCES `log_status` (`log_status_id`);
 
 
-  -- for genders
-  INSERT INTO gender_types (gender_id, gender_name, gender_description) VALUES ('M', 'Male', 'Refers to the male gender'), ('F', 'Female', 'Refers to the female gender'), ('N/A', 'N/A', 'Rather not say');
+-- for genders
+INSERT INTO gender_types (gender_id, gender_name, gender_description) VALUES ('M', 'Male', 'Refers to the male gender'), ('F', 'Female', 'Refers to the female gender'), ('N/A', 'N/A', 'Rather not say');
 
-  -- for user roles
-  INSERT INTO user_roles (role_name, role_description) VALUES 
-  ("Regular User", "Users with limited access to the application's features."),
-  ("Premium User", "Users with full access to the application's features, which means they are already enrolled or registered as part of the school"),
-  ("Administrator", "The main administrator or manager of the system."),
-  ("Student", "Student of the school, is identified as fully registered and has access to numerous features of the system."),
-  ("Teacher", "The ones who teach studens and has access to student informations and manages classroom-student orientation.");
+-- for user roles
+INSERT INTO user_roles (role_name, role_description) VALUES 
+("Regular User", "Users with limited access to the application's features."),
+("Premium User", "Users with full access to the application's features, which means they are already enrolled or registered as part of the school"),
+("Administrator", "The main administrator or manager of the system."),
+("Student", "Student of the school, is identified as fully registered and has access to numerous features of the system."),
+("Teacher", "The ones who teach studens and has access to student informations and manages classroom-student orientation.");
 
 
-  -- for log types and log status
-  INSERT INTO log_status (log_status_name, log_status_description) VALUES 
-  ("Unsuccessful", "Something might went wrong or is invalid or inapproriate access."),
-  ("Successful", "Successful access or is have granted access."),
-  ("Suspicious", "Something unusual happened or malicious access of data or action.");
+-- for log types and log status
+INSERT INTO log_status (log_status_name, log_status_description) VALUES 
+("Unsuccessful", "Something might went wrong or is invalid or inapproriate access."),
+("Successful", "Successful access or is have granted access."),
+("Suspicious", "Something unusual happened or malicious access of data or action.");
 
-  INSERT INTO log_type () VALUES
-  ("Login", "Accessing of account."),
-  ("Logout", "Loggin out of account"),
-  ("Signup", "Creating new account."),
-  ("Unusual Login", "Already logged in?"),
-  ("Password Error", "Wrong password? Is this you?");
+INSERT INTO log_type (log_Type_name, log_type_description) VALUES
+("Login", "Accessing of account."),
+("Logout", "Loggin out of account"),
+("Signup", "Creating new account."),
+("Unusual Login", "Already logged in?"),
+("Password Error", "Wrong password? Is this you?");
 
-  INSERT INTO registration_status (registration_status_name, registration_status_description) VALUES
-  ("Pending", "Not yet approved!"),
-  ("Approved", "Registration has been approved!"),
-  ("Rejected", "Registration has been rejected!"),
-  ("Incomplete", "User did not complete registration!");
+INSERT INTO registration_status (registration_status_name, registration_status_description) VALUES
+("Pending", "Not yet approved!"),
+("Approved", "Registration has been approved!"),
+("Rejected", "Registration has been rejected!"),
+("Incomplete", "User did not complete registration!");
 

@@ -136,12 +136,9 @@ class RegularUserModel extends DatabaseModel
       return true;
    }
 
-   public function addNewTask(string $UUID, string $taskID, string $taskDescription, string $taskDeadline) {}
-   public function removeTask(string $UUID, string $taskID) {}
-   public function setCompleteTasks(string $UUID, string $taskID, string $datetime) {}
-   public function setIncompleteTasks(string $taskId, string $datetime) {}
-   public function getTaskInformation() {}
-   public function getAllTaskInformations() {}
+   // public function setIncompleteTasks(string $taskId, string $datetime) {}
+   // public function getTaskInformation() {}
+   // public function getAllTaskInformations() {}
 
    # METHODS ASSOCIATED WITH THE QUERIES
    public function getAllUserData(
@@ -208,4 +205,151 @@ class RegularUserModel extends DatabaseModel
       $query = "SELECT * FROM gender_types;";
       return $this->setBindedExecution($query)->fetchAll();
    }
-}
+
+   public function setNewTask($data)
+   {
+      $query = "INSERT INTO tasks (
+            task_id,
+            UUID,
+            task_title,
+            task_type,
+            task_deadline,
+            task_priority,
+            task_description,
+            task_status_id
+         ) VALUES (
+            :task_id,
+            :UUID,
+            :task_title,
+            :task_type,
+            :task_deadline,
+            :task_priority,
+            :task_description,
+            :task_status_id
+         );
+      ";
+
+      $this->setBindedExecution($query, $data);
+   }
+
+   public function getAllTask($UUID, $sort)
+   {
+      # TODO
+      $query = "SELECT * FROM 
+         tasks, 
+         task_priorities, 
+         task_types,
+         task_status
+         WHERE UUID = :UUID 
+         AND task_priorities.task_priority_id = tasks.task_priority 
+         AND task_types.task_type_id = tasks.task_type 
+         AND task_status.task_status_id = tasks.task_status_id
+         ORDER BY {$sort};
+      ";
+      return $this->setBindedExecution(
+         $query,
+         ["UUID" => $UUID],
+      )->fetchAll();
+   }
+
+   public function getTask($UUID, $taskID)
+   {
+      $query = "SELECT * FROM tasks, task_priorities,task_types
+      WHERE UUID = :UUID 
+      AND task_id = :task_id
+      AND task_priorities.task_priority_id = tasks.task_priority 
+      AND task_types.task_type_id = tasks.task_type;";
+      return $this->setBindedExecution(
+         $query,
+         ["UUID" => $UUID, "task_id" => $taskID],
+      )->fetchAll();
+   }
+
+   public function filterFetchedTasks($fetchedTask)
+   {
+      $newList = [];
+      foreach ($fetchedTask as $task) {
+         $newList[] = [
+            "task_id" => $task["task_id"],
+            "task_title" => $task["task_title"],
+            "task_type" => $task["task_type_name"],
+            "task_created_on" => $this->middleware->getModifiedTime($task["task_created_on"]),
+            "task_deadline" => $this->middleware->getModifiedTime($task["task_deadline"]),
+            "task_days_remaining" => $this->middleware->getTimeDiff($task["task_deadline"]),
+            "task_priority" => $task["task_priority_name"],
+            "task_description" => $task["task_description"],
+            "task_status" => $task["task_status_name"],
+            "task_raw_data" => [
+               "raw_task_status_id" => $task["task_status_id"],
+               "raw_task_deadline" => $task["task_deadline"],
+               "raw_task_created_on" => $task["task_created_on"],
+               "raw_task_priority_id" => $task["task_priority_id"],
+               "raw_task_type_id" => $task["task_type_id"],
+               "raw_task_completion_date" => $task["task_completion"] ?? null,
+            ]
+         ];
+      }
+      return $newList;
+   }
+
+   public function deleteTask($data)
+   {
+      # TODO
+      $query = "DELETE FROM tasks 
+      WHERE UUID = :UUID AND task_id = :task_id;
+      ";
+      return $this->setBindedExecution($query, $data);
+   }
+
+   public function findPremiumRegsiteredAccount(string $UUID): bool
+   {
+      $query = "SELECT * 
+            FROM all_registered_users 
+            WHERE UUID = :UUID;";
+      return $this->setBindedExecution($query, [
+         "UUID" => $UUID,
+      ])->fetchAll() ? true : false;
+   }
+
+   public function setCompleteTasks(
+      string $UUID,
+      string $taskID,
+      $datetime,
+   ) {
+      # TODO
+      $data = [
+         "UUID" => $UUID,
+         "task_id" => $taskID,
+         "task_status_id" => 2,
+         "task_completion" => $datetime,
+      ];
+
+      $query = "UPDATE tasks 
+      SET 
+         task_status_id = :task_status_id, 
+         task_completion = :task_completion 
+      WHERE UUID = :UUID 
+      AND task_id = :task_id;";
+      return $this->setBindedExecution($query, $data);
+   }
+
+   public function changeTaskTitle(
+      $data,
+      $timeModif,
+   ) {
+      # TODO
+      $newData = [
+         "task_id" => $data["task_id"],
+         "task_title" => $this->middleware->stringSanitization($data["task_title"]),
+         "UUID" => $data["UUID"],
+         "task_last_modified" => $timeModif,
+      ];
+
+      $query = "UPDATE tasks SET
+         task_title = :task_title,
+         task_last_modified = :task_last_modified
+      WHERE UUID = :UUID
+      AND task_id = :task_id;";
+      return $this->setBindedExecution($query, $newData);
+   }
+};
