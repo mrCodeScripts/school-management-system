@@ -418,17 +418,19 @@ Router::post(
 		$middleware,
 		$regularUserController,
 	) {
-		# DONE (still on development) -- overall: DONE
 		header("Content-Type: application/json");
+		$clientData = $middleware->spillJSON();
 		[$UUID, $userEmail] = $regularUserController->validateTaskAccess();
+		# TODO (-- add CSRF token validation)
+		$middleware->validateCSRFToken($clientData["csrf_token"], true);
 		$newTask = [
-			"task_id" => $middleware->getUUID() ?? null,
+			"task_id" => $middleware->generateRandomToken() ?? null,
 			"UUID" => $UUID ?? null,
-			"task_title" => $_POST["task_title"] ?? null,
-			"task_type" => $_POST["task_type"] ?? 1, # regular task - id:1
-			"task_deadline" => $_POST["task_deadline"] ?? null,
-			"task_priority" => $_POST["task_priority"] ?? null,
-			"task_description" => $_POST["task_description"] ?? null,
+			"task_title" => $clientData["data"]["task_title"] ?? null,
+			"task_type" => $clientData["data"]["task_type"] ?? 1, # regular task - id:1
+			"task_deadline" => $clientData["data"]["task_deadline"] ?? null,
+			"task_priority" => $clientData["data"]["task_priority"] ?? null,
+			"task_description" => $clientData["data"]["task_description"] ?? null,
 		];
 		$middleware->isAnyColumnEmpty($newTask, true);
 		$regularUserController->createTask($newTask);
@@ -453,19 +455,23 @@ Router::post(
 	) {
 		# DONE (still on development) -- overal: DONE
 		header("Content-Type: application/json");
+		$clientData = $middleware->spillJSON();
 		[$UUID, $userEmail] = $regularUserController->validateTaskAccess();
+		$middleware->validateCSRFToken($clientData["csrf_token"], true);
 		$deleteTask = [
-			"task_id" => $_POST["task_id"] ?? null,
 			"UUID" => $UUID,
+			"data" => [...$clientData["data"]],
 		];
 		$middleware->isAnyColumnEmpty($deleteTask, true);
-		$regularUserController->deleteTask($deleteTask);
+		$regularUserController->deleteTasks($deleteTask);
 		$regularUserController->updateTaskList($UUID);
 		die(json_encode([
-			"message" => "Successfully deleted task.",
+			"message" => "Successfully deleted tasks.",
 			"type" => "TASK_DELETE_SUCCESS",
 			"status" => "successful"
 		]));
+
+		# CONTINUE THIS SHIT
 	},
 	$middleware,
 	$regularUserController,
@@ -671,13 +677,29 @@ Router::post("/account/files/metadata", function () {
 
 
 
-Router::post("/account/test/data", function () {
+Router::post("/account/test/data", function ($middleware) {
 	header("Content-Type: application/json");
 	$clientJSON = file_get_contents("php://input");
 	$JSON = json_decode($clientJSON, true);
-	$userData = $_SESSION["userAccount"] ?? ["ERROR" => "User data is not available!"];
+
+	$clientData = $middleware->spillJSON();
+	$token = $clientData["token"] ?? null;
+	// echo $clientData["data"][0]["task_title"];
+	if (empty($token)) {
+		die(json_encode([
+			"error" => "no tokent found",
+		]));
+	}
+
+	$userData = [
+		"randomData" => $clientData["data"][0]["task_title"],
+	];
+
+	$middleware->isAnyColumnEmpty($userData, true);
+
+	// $userData = $_SESSION["userAccount"] ?? ["ERROR" => "User data is not available!"];
 	die(json_encode($userData));
-});
+}, $middleware);
 
 
 

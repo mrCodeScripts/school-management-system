@@ -122,7 +122,7 @@ class Middleware
             }
             $isEmpty = false;
         }
-        if ($sendMsg) {
+        if ($sendMsg && $isEmpty) {
             die(json_encode([
                 "message" => "Incomplete data.",
                 "type" => "INCOMPLETE_DATA",
@@ -131,6 +131,34 @@ class Middleware
         } else {
             return $isEmpty;
         }
+    }
+
+    public function validateCSRFToken(
+        string $token,
+        bool $sendMsg = false,
+    ) {
+        /*
+        if ($sendMsg && $token !== $_SESSION["csrf_token"]) {
+            die(json_encode([
+                "message" => "Incomplete data.",
+                "type" => "INCOMPLETE_DATA",
+                "status" => "unsuccessful",
+            ]));
+        } else {
+            return false;
+        }
+        return true;
+        */
+        if ($sendMsg && $token !== "123" || empty($token)) {
+            die(json_encode([
+                "message" => "Invalid or Empty token.",
+                "type" => "TOKEN_ERR",
+                "status" => "unsuccessful",
+            ]));
+        } else {
+            return false;
+        }
+        return true;
     }
 
     # GETTERS
@@ -248,6 +276,18 @@ class Middleware
             die(json_encode($this->messages));
         }
         return $password;
+    }
+
+    public function setCSRFToken(): void
+    {
+        $token = hash("sha512", random_bytes(64));
+        $this->setSessionData("csrf_t", $token);
+    }
+
+    public function generateRandomToken(): string
+    {
+        # TODO
+        return bin2hex(random_bytes(8));
     }
 
     public function spillJSON(): array

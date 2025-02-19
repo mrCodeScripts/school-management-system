@@ -257,12 +257,46 @@ class RegularUserController
             "task_title" => $this->middleware->stringSanitization($taskData["task_title"]),
             "task_type" => $taskData["task_type"],
             "task_deadline" => $this->middleware->stringSanitization($taskData["task_deadline"]),
-            "task_priority" => $this->middleware->stringSanitization($taskData["task_priority"]),
+            "task_priority" => intval($taskData["task_priority"]),
             "task_description" => $this->middleware->stringSanitization($taskData["task_description"]),
             "task_status_id" => 1,
         ];
 
         $this->regularUserModel->setNewTask($filterData);
+    }
+
+    public function validateTasksExists($data, $sendMsg = false)
+    {
+        # TODO
+        $nonExistentItems = [];
+        $alert = [
+            "type" => "TASK_MANAGER_ERR",
+            "status" => "unsuccessful",
+            "messages" => [],
+        ];
+
+        foreach ($data as $d) {
+            $t = $this->regularUserModel->getTask(
+                $d["UUID"],
+                $d["task_id"],
+            );
+            if (!$t) {
+                $nonExistentItems[] = $t;
+            }
+        }
+
+        if (!empty($nonExistentItems)) {
+            foreach ($nonExistentItems as $item) {
+                $alert["messages"][] =
+                    "{$item["task_title"]} does not exist";
+            }
+        }
+
+        if ($sendMsg && !empty($nonExistentItems)) {
+            die(json_encode($alert));
+        } else {
+            return $alert;
+        }
     }
 
     public function deleteTask($taskData)
@@ -271,6 +305,7 @@ class RegularUserController
             $taskData["UUID"],
             $taskData["task_id"],
         );
+
         if (!$getTask) {
             die(json_encode([
                 "message" => "Task does not exist.",
@@ -287,6 +322,36 @@ class RegularUserController
             ]));
         }
     }
+
+    public function deleteTasks($taskData)
+    {
+        # TODO
+        $err = [
+            "type" => "TASK_MANAGER_ERR",
+            "status" => "unsuccessful",
+            "messages" => [],
+        ];
+
+        $this->validateTasksExists($taskData["data"], true);
+        foreach ($taskData["data"] as $data) {
+            # TODO
+            if (!$this->regularUserModel->deleteTask($data)) {
+                die(json_encode([
+                    "message" => "Failed to delete task",
+                    "type" => "TASK_MANAGER_ERR",
+                    "status" => "unsuccessful",
+                ]));
+                $err["messages"][] =
+                    "{$data["task_title"]} does not exist";
+            }
+
+            # TODO 
+            # RETURN ERROR OR SUCCESS MESSAGES ON DELETING TASKS
+            # DO IT AS WELL AS OTHER TASK OPERATIONS
+        }
+    }
+
+
 
     public function updateTaskList(
         string $UUID,
