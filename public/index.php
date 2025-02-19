@@ -673,6 +673,8 @@ Router::post("/account/files/metadata", function () {
 
 Router::post("/account/test/data", function () {
 	header("Content-Type: application/json");
+	$clientJSON = file_get_contents("php://input");
+	$JSON = json_decode($clientJSON, true);
 	$userData = $_SESSION["userAccount"] ?? ["ERROR" => "User data is not available!"];
 	die(json_encode($userData));
 });

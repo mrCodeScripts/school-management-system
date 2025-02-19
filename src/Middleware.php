@@ -112,7 +112,7 @@ class Middleware
 
     public function isAnyColumnEmpty(
         array $data,
-        bool $sendMsg,
+        bool $sendMsg = false,
     ) {
         $isEmpty = true;
         foreach ($data as $key => $data) {
@@ -248,5 +248,10 @@ class Middleware
             die(json_encode($this->messages));
         }
         return $password;
+    }
+
+    public function spillJSON(): array
+    {
+        return json_decode(file_get_contents("php://input"), true);
     }
 };
