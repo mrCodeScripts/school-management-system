@@ -354,4 +354,61 @@ class RegularUserModel extends DatabaseModel
       AND task_id = :task_id;";
       return $this->setBindedExecution($query, $newData);
    }
+
+   public function changeTaskDesc(
+      $data,
+      $timeModif,
+   ) {
+      $newData = [
+         "task_id" => $data["task_id"],
+         "task_description" => $this->middleware->stringSanitization($data["task_description"]),
+         "UUID" => $data["UUID"],
+         "task_last_modified" => $timeModif,
+      ];
+
+      $query = "UPDATE tasks SET
+         task_description = :task_description,
+         task_last_modified = :task_last_modified
+      WHERE UUID = :UUID
+      AND task_id = :task_id;";
+      return $this->setBindedExecution($query, $newData);
+   }
+
+   public function changeTaskPriority(
+      $data,
+      $timeModif,
+   ) {
+      $newData = [
+         "task_id" => $data["task_id"],
+         "task_priority" => $this->middleware->stringSanitization($data["task_priority"]),
+         "UUID" => $data["UUID"],
+         "task_last_modified" => $timeModif,
+      ];
+
+      $query = "UPDATE tasks SET
+         task_priority = :task_priority,
+         task_last_modified = :task_last_modified
+      WHERE UUID = :UUID
+      AND task_id = :task_id;";
+      return $this->setBindedExecution($query, $newData);
+   }
+
+   public function changeTaskDeadline(
+      $data,
+      $timeModif,
+   ) {
+      $newData = [
+         "task_id" => $data["task_id"],
+         "task_deadline" => $data["task_deadline"],
+         "UUID" => $data["UUID"],
+         "task_last_modified" => $timeModif,
+      ];
+
+      $query = "UPDATE tasks SET
+         task_deadline = :task_deadline,
+         task_last_modified = :task_last_modified
+      WHERE UUID = :UUID
+      AND task_id = :task_id;";
+      return $this->setBindedExecution($query, $newData);
+   }
 };

@@ -82,13 +82,18 @@ Router::get(
 		$regularUserController,
 		$regularUserModel
 	) {
+
 		if (empty($_SESSION["userAccount"])) {
 			header("Location: /login");
 		}
-		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
+
+		$userExist = $_SESSION["userAccount"] ?? null;
+		$userEmail = $userExist["currentAccountBasicInfo"][0]["user_email"] ?? null;
 		$generalAccData = $regularUserModel->getGeneralAccountInformations($userEmail) ?? null;
 		$UUID = $generalAccData[0]["UUID"];
-		$regularUserController->updateTaskList($UUID, "task_");
+
+		$regularUserController->updateTaskList($UUID);
+
 		include __DIR__
 			. "/../src/View/user.dashboards/regular.subdashb/taskmanager.dashb.php";
 		die();
@@ -263,10 +268,8 @@ Router::post(
 	"/account/auth/student/enr",
 	function (
 		$middleware,
-		$regularUserController,
 		$studentController,
 		$regularUserModel,
-		$studentModel,
 	) {
 
 		# STUDENT REIGISTRATION AUTHENTICATION ROUTE
@@ -283,9 +286,11 @@ Router::post(
 		}
 
 		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
-		$generalAccData = $regularUserModel->getGeneralAccountInformations($userEmail) ?? null;
+		$generalAccData = $regularUserModel
+			->getGeneralAccountInformations($userEmail) ?? null;
 		$UUID = $generalAccData[0]["UUID"];
-		$findAccPremium = $regularUserModel->findPremiumRegsiteredAccount($UUID) ?? null;
+		$findAccPremium = $regularUserModel
+			->findPremiumRegsiteredAccount($UUID) ?? null;
 
 		if (!empty($findAccPremium)) {
 			die(json_encode([
@@ -335,10 +340,8 @@ Router::post(
 	"/account/auth/teacher/enr",
 	function (
 		$middleware,
-		$regularUserController,
 		$teacherController,
 		$regularUserModel,
-		$teacherModel,
 	) {
 
 		# TEACHER REIGISTRATION AUTHENTICATION ROUTE
@@ -355,9 +358,11 @@ Router::post(
 		}
 
 		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
-		$generalAccData = $regularUserModel->getGeneralAccountInformations($userEmail) ?? null;
+		$generalAccData = $regularUserModel
+			->getGeneralAccountInformations($userEmail) ?? null;
 		$UUID = $generalAccData[0]["UUID"];
-		$findAccPremium = $regularUserModel->findPremiumRegsiteredAccount($UUID) ?? null;
+		$findAccPremium = $regularUserModel
+			->findPremiumRegsiteredAccount($UUID) ?? null;
 
 		if (!empty($findAccPremium)) {
 			die(json_encode([
@@ -384,7 +389,10 @@ Router::post(
 			]));
 		}
 
-		$teacherController->teacherFullRegistration($teacher_informations, $UUID);
+		$teacherController->teacherFullRegistration(
+			$teacher_informations,
+			$UUID
+		);
 
 		die(json_encode([
 			"message" => "You are now fucking registered.",
@@ -409,46 +417,22 @@ Router::post(
 	function (
 		$middleware,
 		$regularUserController,
-		$regularUserModel,
 	) {
-		# TODO (still on development) -- overall: DONE
+		# DONE (still on development) -- overall: DONE
 		header("Content-Type: application/json");
-
-		$existingUser = $_SESSION["userAccount"] ?? null;
-		if (empty($existingUser)) {
-			die(json_encode([
-				"message" => "You are not logged in yet bitch!",
-				"type" => "TASK_MANAGER_ERR",
-				"status" => "unsuccessful",
-			]));
-		}
-
-		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
-		$generalAccData = $regularUserModel
-			->getGeneralAccountInformations($userEmail) ?? null;
-		$UUID = $generalAccData[0]["UUID"];
-
+		[$UUID, $userEmail] = $regularUserController->validateTaskAccess();
 		$newTask = [
-			"task_id" => $middleware->getUUID(),
-			"UUID" => $UUID,
-			"task_title" => $_POST["task_title"],
+			"task_id" => $middleware->getUUID() ?? null,
+			"UUID" => $UUID ?? null,
+			"task_title" => $_POST["task_title"] ?? null,
 			"task_type" => $_POST["task_type"] ?? 1, # regular task - id:1
-			"task_deadline" => $_POST["task_deadline"],
-			"task_priority" => $_POST["task_priority"],
-			"task_description" => $_POST["task_description"],
+			"task_deadline" => $_POST["task_deadline"] ?? null,
+			"task_priority" => $_POST["task_priority"] ?? null,
+			"task_description" => $_POST["task_description"] ?? null,
 		];
-
-		if ($middleware->isAnyColumnEmpty($newTask)) {
-			die(json_encode([
-				"message" => "Incomplete data.",
-				"type" => "INCOMPLETE_DATA",
-				"status" => "unsuccessful",
-			]));
-		}
-
+		$middleware->isAnyColumnEmpty($newTask, true);
 		$regularUserController->createTask($newTask);
 		$regularUserController->updateTaskList($UUID);
-
 		die(json_encode([
 			"message" => "Successfully created task.",
 			"type" => "TASK_CREATE_SUCCESS",
@@ -466,41 +450,17 @@ Router::post(
 	function (
 		$middleware,
 		$regularUserController,
-		$regularUserModel,
 	) {
-		# TODO (still on development) -- overal: DONE
+		# DONE (still on development) -- overal: DONE
 		header("Content-Type: application/json");
-
-		$existingUser = $_SESSION["userAccount"] ?? null;
-		if (empty($existingUser)) {
-			die(json_encode([
-				"message" => "You are not logged in yet bitch!",
-				"type" => "TASK_MANAGER_ERR",
-				"status" => "unsuccessful",
-			]));
-		}
-
-		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
-		$generalAccData = $regularUserModel
-			->getGeneralAccountInformations($userEmail) ?? null;
-		$UUID = $generalAccData[0]["UUID"];
-
+		[$UUID, $userEmail] = $regularUserController->validateTaskAccess();
 		$deleteTask = [
-			"task_id" => $_POST["task_id"],
+			"task_id" => $_POST["task_id"] ?? null,
 			"UUID" => $UUID,
 		];
-
-		if ($middleware->isAnyColumnEmpty($deleteTask)) {
-			die(json_encode([
-				"message" => "Incomplete data.",
-				"type" => "INCOMPLETE_DATA",
-				"status" => "unsuccessful",
-			]));
-		}
-
+		$middleware->isAnyColumnEmpty($deleteTask, true);
 		$regularUserController->deleteTask($deleteTask);
 		$regularUserController->updateTaskList($UUID);
-
 		die(json_encode([
 			"message" => "Successfully deleted task.",
 			"type" => "TASK_DELETE_SUCCESS",
@@ -517,40 +477,17 @@ Router::post(
 	function (
 		$middleware,
 		$regularUserController,
-		$regularUserModel,
 	) {
-		# TODO
+		# DONE (still on development) -- overall: DONE
 		header("Content-Type: application/json");
-		$existingUser = $_SESSION["userAccount"] ?? null;
-		if (empty($existingUser)) {
-			die(json_encode([
-				"message" => "You are not logged in yet bitch!",
-				"type" => "TASK_MANAGER_ERR",
-				"status" => "unsuccessful",
-			]));
-		}
-
-		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
-		$generalAccData = $regularUserModel
-			->getGeneralAccountInformations($userEmail) ?? null;
-		$UUID = $generalAccData[0]["UUID"];
-
+		[$UUID, $userEmail] = $regularUserController->validateTaskAccess();
 		$completedTask = [
-			"task_id" => $_POST["task_id"],
+			"task_id" => $_POST["task_id"] ?? null,
 			"UUID" => $UUID,
 		];
-
-		if ($middleware->isAnyColumnEmpty($completedTask)) {
-			die(json_encode([
-				"message" => "Incomplete data.",
-				"type" => "INCOMPLETE_DATA",
-				"status" => "unsuccessful",
-			]));
-		}
-
+		$middleware->isAnyColumnEmpty($completedTask, true);
 		$regularUserController->completedTask($completedTask);
 		$regularUserController->updateTaskList($UUID);
-
 		die(json_encode([
 			"message" => "Successfully set task as COMPLETED. Congratulations.",
 			"type" => "TASK_COMPLETE_SUCCESS",
@@ -569,39 +506,17 @@ Router::post(
 		$regularUserController,
 		$regularUserModel,
 	) {
-		# TODO
-
+		# DONE (still on development) -- overall: DONE
 		header("Content-Type: application/json");
-
-		$existingUser = $_SESSION["userAccount"] ?? null;
-		if (empty($existingUser)) {
-			die(json_encode([
-				"message" => "You are not logged in yet bitch!",
-				"type" => "TASK_MANAGER_ERR",
-				"status" => "unsuccessful",
-			]));
-		}
-		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
-		$generalAccData = $regularUserModel->getGeneralAccountInformations($userEmail) ?? null;
-		$UUID = $generalAccData[0]["UUID"];
-
+		[$UUID, $userEmail] = $regularUserController->validateTaskAccess();
 		$newTaskTitle = [
-			"task_id" => $_POST["task_id"],
+			"task_id" => $_POST["task_id"] ?? null,
 			"UUID" => $UUID,
-			"task_title" => $_POST["new_task_title"]
+			"task_title" => $_POST["new_task_title"] ?? null,
 		];
-
-		if ($middleware->isAnyColumnEmpty($newTaskTitle)) {
-			die(json_encode([
-				"message" => "Incomplete data.",
-				"type" => "INCOMPLETE_DATA",
-				"status" => "unsuccessful",
-			]));
-		}
-
+		$middleware->isAnyColumnEmpty($newTaskTitle, true);
 		$regularUserController->changeTaskTitle($newTaskTitle);
 		$regularUserController->updateTaskList($UUID);
-
 		die(json_encode([
 			"message" => "Successfully changed task title.",
 			"type" => "TASK_MODIF_SUCCESS",
@@ -620,36 +535,17 @@ Router::post(
 		$regularUserController,
 		$regularUserModel,
 	) {
-		# TODO
-		$existingUser = $_SESSION["userAccount"] ?? null;
-		if (empty($existingUser)) {
-			die(json_encode([
-				"message" => "You are not logged in yet bitch!",
-				"type" => "TASK_MANAGER_ERR",
-				"status" => "unsuccessful",
-			]));
-		}
-
-		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
-		$generalAccData = $regularUserModel->getGeneralAccountInformations($userEmail) ?? null;
-		$UUID = $generalAccData[0]["UUID"];
-
+		# DONE (still on development) -- overall: DONE
+		header("Content-Type: application/json");
+		[$UUID, $userEmail] = $regularUserController->validateTaskAccess();
 		$newTaskDesc = [
-			"task_id" => $_POST["task_id"],
+			"task_id" => $_POST["task_id"] ?? null,
 			"UUID" => $UUID,
-			"task_desciption" => $_POST["new_task_description"]
+			"task_description" => $_POST["new_task_description"] ?? null,
 		];
-
-		if ($middleware->isAnyColumnEmpty($newTaskDesc)) {
-			die(json_encode([
-				"message" => "Incomplete data.",
-				"type" => "INCOMPLETE_DATA",
-				"status" => "unsuccessful",
-			]));
-		}
-
+		$middleware->isAnyColumnEmpty($newTaskDesc, true);
 		$regularUserController->changeTaskDescription($newTaskDesc);
-
+		$regularUserController->updateTaskList($UUID);
 		die(json_encode([
 			"message" => "Successfully changed task description.",
 			"type" => "TASK_MODIF_SUCCESS",
@@ -668,36 +564,17 @@ Router::post(
 		$regularUserController,
 		$regularUserModel,
 	) {
-		# TODO
-		$existingUser = $_SESSION["userAccount"] ?? null;
-		if (empty($existingUser)) {
-			die(json_encode([
-				"message" => "You are not logged in yet bitch!",
-				"type" => "TASK_MANAGER_ERR",
-				"status" => "unsuccessful",
-			]));
-		}
-
-		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
-		$generalAccData = $regularUserModel->getGeneralAccountInformations($userEmail) ?? null;
-		$UUID = $generalAccData[0]["UUID"];
-
+		# DONE (still on development) -- overall: DONE
+		header("Content-Type: application/json");
+		[$UUID, $userEmail] = $regularUserController->validateTaskAccess();
 		$newTaskEndt = [
-			"task_id" => $_POST["task_id"],
+			"task_id" => $_POST["task_id"] ?? null,
 			"UUID" => $UUID,
-			"task_deadline" => $_POST["new_task_deadline"]
+			"task_deadline" => $_POST["new_task_deadline"] ?? null,
 		];
-
-		if ($middleware->isAnyColumnEmpty($newTaskEndt)) {
-			die(json_encode([
-				"message" => "Incomplete data.",
-				"type" => "INCOMPLETE_DATA",
-				"status" => "unsuccessful",
-			]));
-		}
-
+		$middleware->isAnyColumnEmpty($newTaskEndt, true);
 		$regularUserController->changeTaskDeadline($newTaskEndt);
-
+		$regularUserController->updateTaskList($UUID);
 		die(json_encode([
 			"message" => "Successfully changed task deadline.",
 			"type" => "TASK_MODIF_SUCCESS",
@@ -716,36 +593,17 @@ Router::post(
 		$regularUserController,
 		$regularUserModel,
 	) {
-		# TODO
-		$existingUser = $_SESSION["userAccount"] ?? null;
-		if (empty($existingUser)) {
-			die(json_encode([
-				"message" => "You are not logged in yet bitch!",
-				"type" => "TASK_MANAGER_ERR",
-				"status" => "unsuccessful",
-			]));
-		}
-
-		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
-		$generalAccData = $regularUserModel->getGeneralAccountInformations($userEmail) ?? null;
-		$UUID = $generalAccData[0]["UUID"];
-
+		# DONE (still on development) -- overall: DONE
+		header("Content-Type: application/json");
+		[$UUID, $userEmail] = $regularUserController->validateTaskAccess();
 		$newTaskPrior = [
 			"task_id" => $_POST["task_id"],
 			"UUID" => $UUID,
 			"task_priority" => $_POST["new_task_priority"]
 		];
-
-		if ($middleware->isAnyColumnEmpty($newTaskPrior)) {
-			die(json_encode([
-				"message" => "Incomplete data.",
-				"type" => "INCOMPLETE_DATA",
-				"status" => "unsuccessful",
-			]));
-		}
-
+		$middleware->isAnyColumnEmpty($newTaskPrior, true);
 		$regularUserController->changeTaskPriority($newTaskPrior);
-
+		$regularUserController->updateTaskList($UUID);
 		die(json_encode([
 			"message" => "Successfully changed task priority level.",
 			"type" => "TASK_MODIF_SUCCESS",
@@ -756,6 +614,34 @@ Router::post(
 	$regularUserController,
 	$regularUserModel,
 );
+
+Router::post("/account/task/c/sort", function () {
+	# TODO
+});
+
+
+# INBOX REQUEST ROUTES
+Router::post("/account/inbox/create", function () {
+	# TODO
+});
+
+Router::post("/account/inbox/delete", function () {
+	# TODO
+});
+
+Router::get("/account/inbox/open", function () {
+	# TODO
+});
+
+Router::post("/account/inbox/mark-read", function () {
+	# TODO
+});
+
+Router::post("/account/inbox/reply", function () {
+	# TODO
+});
+
+
 
 # FILE SYSTEM REQUEST ROUTES
 Router::post("/account/files/upload", function () {
@@ -781,30 +667,15 @@ Router::post("/account/files/rename", function () {
 Router::post("/account/files/metadata", function () {
 	# TODO
 });
-
-# INBOX REQUEST ROUTES
-Router::post("/account/inbox/create", function () {
-	# TODO
-});
-
-Router::post("/account/inbox/delete", function () {
-	# TODO
-});
-
-Router::get("/account/inbox/open", function () {
-	# TODO
-});
-
-Router::post("/account/inbox/mark-read", function () {
-	# TODO
-});
-
-Router::post("/account/inbox/reply", function () {
-	# TODO
-});
-
 # =========================================================================
 
+
+
+Router::post("/account/test/data", function () {
+	header("Content-Type: application/json");
+	$userData = $_SESSION["userAccount"] ?? ["ERROR" => "User data is not available!"];
+	die(json_encode($userData));
+});
 
 
 

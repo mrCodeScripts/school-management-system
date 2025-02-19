@@ -111,7 +111,8 @@ class Middleware
     }
 
     public function isAnyColumnEmpty(
-        array $data
+        array $data,
+        bool $sendMsg,
     ) {
         $isEmpty = true;
         foreach ($data as $key => $data) {
@@ -121,7 +122,15 @@ class Middleware
             }
             $isEmpty = false;
         }
-        return $isEmpty;
+        if ($sendMsg) {
+            die(json_encode([
+                "message" => "Incomplete data.",
+                "type" => "INCOMPLETE_DATA",
+                "status" => "unsuccessful",
+            ]));
+        } else {
+            return $isEmpty;
+        }
     }
 
     # GETTERS

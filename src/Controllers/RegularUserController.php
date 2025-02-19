@@ -226,7 +226,29 @@ class RegularUserController
         }
     }
 
-    ## TASKS
+    ## =================== TASKS =====================================
+    public function validateTaskAccess()
+    {
+        # TODO
+
+        $existingUser = $_SESSION["userAccount"] ?? null;
+        if (empty($existingUser)) {
+            die(json_encode([
+                "message" => "You are not logged in yet bitch!",
+                "type" => "TASK_MANAGER_ERR",
+                "status" => "unsuccessful",
+            ]));
+        }
+
+        $userEmail =
+            $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
+        $generalAccData = $this->regularUserModel
+            ->getGeneralAccountInformations($userEmail) ?? null;
+        $UUID = $generalAccData[0]["UUID"];
+
+        return [$UUID, $userEmail];
+    }
+
     public function createTask($taskData)
     {
         $filterData = [
@@ -323,7 +345,6 @@ class RegularUserController
 
     public function changeTaskTitle($data)
     {
-        # TODO
         $getTask = $this->regularUserModel->getTask(
             $data["UUID"],
             $data["task_id"],
@@ -349,20 +370,123 @@ class RegularUserController
         }
     }
 
-    public function changeTaskDescription()
+    public function changeTaskDescription($data)
+    {
+        $getTask = $this->regularUserModel->getTask(
+            $data["UUID"],
+            $data["task_id"],
+        );
+
+        if (!$getTask) {
+            die(json_encode([
+                "message" => "Task does not exist.",
+                "type" => "TASK_MANAGER_ERR",
+                "status" => "unsuccessful",
+            ]));
+        }
+
+        if (!$this->regularUserModel->changeTaskDesc(
+            $data,
+            $this->middleware->getCurrentTime()
+        )) {
+            die(json_encode([
+                "message" => "Failed to change task title.",
+                "type" => "TASK_MANAGER_ERR",
+                "status" => "unsuccessful"
+            ]));
+        }
+    }
+
+    public function changeTaskPriority($data)
+    {
+        $getTask = $this->regularUserModel->getTask(
+            $data["UUID"],
+            $data["task_id"],
+        );
+
+        if (!$getTask) {
+            die(json_encode([
+                "message" => "Task does not exist.",
+                "type" => "TASK_MANAGER_ERR",
+                "status" => "unsuccessful",
+            ]));
+        }
+
+        if (!$this->regularUserModel->changeTaskPriority(
+            $data,
+            $this->middleware->getCurrentTime()
+        )) {
+            die(json_encode([
+                "message" => "Failed to change task title.",
+                "type" => "TASK_MANAGER_ERR",
+                "status" => "unsuccessful"
+            ]));
+        }
+    }
+
+    public function changeTaskDeadline($data)
+    {
+        # TODO
+        $getTask = $this->regularUserModel->getTask(
+            $data["UUID"],
+            $data["task_id"],
+        );
+
+        if (!$getTask) {
+            die(json_encode([
+                "message" => "Task does not exist.",
+                "type" => "TASK_MANAGER_ERR",
+                "status" => "unsuccessful",
+            ]));
+        }
+
+        if (!$this->regularUserModel->changeTaskDeadline(
+            $data,
+            $this->middleware->getCurrentTime()
+        )) {
+            die(json_encode([
+                "message" => "Failed to change task title.",
+                "type" => "TASK_MANAGER_ERR",
+                "status" => "unsuccessful"
+            ]));
+        }
+    }
+    # =============================================================
+
+
+
+
+
+    ##======================== INBOX ==================
+    public function createInbox()
     {
         # TODO
     }
 
-    public function changeTaskDeadline()
+    public function deleteInbox()
     {
         # TODO
     }
 
-    public function changeTaskPriority()
+    public function openInbox()
     {
         # TODO
     }
+
+    public function markReadInbox()
+    {
+        # TODO
+    }
+
+    public function replyInbox()
+    {
+        # TODO
+    }
+    # =====================================================
+
+
+
+
 
 
     ## FILES
@@ -392,32 +516,6 @@ class RegularUserController
     }
 
     public function metadataFile()
-    {
-        # TODO
-    }
-
-    ## INBOX
-    public function createInbox()
-    {
-        # TODO
-    }
-
-    public function deleteInbox()
-    {
-        # TODO
-    }
-
-    public function openInbox()
-    {
-        # TODO
-    }
-
-    public function markReadInbox()
-    {
-        # TODO
-    }
-
-    public function replyInbox()
     {
         # TODO
     }
