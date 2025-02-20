@@ -137,6 +137,7 @@ class Middleware
         string $token,
         bool $sendMsg = false,
     ) {
+        # CONTINUE CSRF SECURITY HERE
         /*
         if ($sendMsg && $token !== $_SESSION["csrf_token"]) {
             die(json_encode([
@@ -150,6 +151,7 @@ class Middleware
         return true;
         */
         if ($sendMsg && $token !== "123" || empty($token)) {
+            http_response_code(404);
             die(json_encode([
                 "message" => "Invalid or Empty token.",
                 "type" => "TOKEN_ERR",

@@ -171,12 +171,18 @@ class RegularUserController
         if (!$currentUserData) {
             $this->middleware->destroySessions();
             $this->middleware->unsetSessions();
+            die(json_encode([
+                "message" => "You are not logged in yet bitch!",
+                "type" => "USER_UPDATE_ACC",
+                "status" => "unsuccessful",
+            ]));
         };
 
+        $userEmail =
+            $currentUserData["currentAccountBasicInfo"][0]["user_email"] ?? null;
+
         $findUser = $this->regularUserModel
-            ->getGeneralAccountInformations(
-                $currentUserData["currentAccountBasicInfo"][0]["user_email"]
-            );
+            ->getGeneralAccountInformations($userEmail);
 
         if (empty($findUser)) {
             $this->middleware->destroySessions();
@@ -265,40 +271,6 @@ class RegularUserController
         $this->regularUserModel->setNewTask($filterData);
     }
 
-    public function validateTasksExists($data, $sendMsg = false)
-    {
-        # TODO
-        $nonExistentItems = [];
-        $alert = [
-            "type" => "TASK_MANAGER_ERR",
-            "status" => "unsuccessful",
-            "messages" => [],
-        ];
-
-        foreach ($data as $d) {
-            $t = $this->regularUserModel->getTask(
-                $d["UUID"],
-                $d["task_id"],
-            );
-            if (!$t) {
-                $nonExistentItems[] = $t;
-            }
-        }
-
-        if (!empty($nonExistentItems)) {
-            foreach ($nonExistentItems as $item) {
-                $alert["messages"][] =
-                    "{$item["task_title"]} does not exist";
-            }
-        }
-
-        if ($sendMsg && !empty($nonExistentItems)) {
-            die(json_encode($alert));
-        } else {
-            return $alert;
-        }
-    }
-
     public function deleteTask($taskData)
     {
         $getTask = $this->regularUserModel->getTask(
@@ -323,32 +295,144 @@ class RegularUserController
         }
     }
 
-    public function deleteTasks($taskData)
+    public function validateTasksExists($data, $sendMsg = false)
     {
         # TODO
-        $err = [
-            "type" => "TASK_MANAGER_ERR",
+        $existedItems = [];
+        $errMessages = [];
+
+        foreach ($data["data"] as $d) {
+            $t = $this->regularUserModel->getTask(
+                $data["UUID"],
+                $d["task_id"],
+            );
+            if ($t) {
+                $existedItems[] = $t[0];
+            } else {
+                $taskLabel = $d["task_name"] ?? $d["task_index"] ?? null;
+                $errMessages[] = [
+                    "taskName" => "'{$taskLabel}'",
+                    "phrase" => "{$taskLabel} does not exist",
+                ];
+            }
+        }
+
+        if ($sendMsg && !empty($nonExistentItems)) {
+            die(json_encode($errMessages));
+        } else {
+            return [$existedItems, $errMessages];
+        }
+    }
+
+    public function taskManagerNotification($msg)
+    {
+        # TODO
+    }
+
+    public function deleteTasks($data)
+    {
+        # DONE (still on development) -- overal: DONE
+        $msg = [
+            "type" => "SPECIAL_TASK_MANAGER_MSG",
             "status" => "unsuccessful",
-            "messages" => [],
+            "messages" => [
+                "failed" => null,
+                "success" => null,
+            ],
         ];
 
-        $this->validateTasksExists($taskData["data"], true);
-        foreach ($taskData["data"] as $data) {
-            # TODO
-            if (!$this->regularUserModel->deleteTask($data)) {
-                die(json_encode([
-                    "message" => "Failed to delete task",
-                    "type" => "TASK_MANAGER_ERR",
-                    "status" => "unsuccessful",
-                ]));
-                $err["messages"][] =
-                    "{$data["task_title"]} does not exist";
+        [$existedItems, $errMessages] = $this->validateTasksExists($data);
+        if (!empty($errMessages)) {
+            foreach ($errMessages as $msgs) {
+                $msg["messages"]["failed"][] = [
+                    "errSaltStmnt" => "Failed to remove task named ",
+                    ...$msgs,
+                ];
             }
-
-            # TODO 
-            # RETURN ERROR OR SUCCESS MESSAGES ON DELETING TASKS
-            # DO IT AS WELL AS OTHER TASK OPERATIONS
+        } else {
+            $msg["messages"]["failed"] = null;
         }
+
+        if (!empty($existedItems)) {
+            foreach ($existedItems as $data) {
+                if ($this->regularUserModel->deleteTask(
+                    [
+                        "UUID" => $data["UUID"],
+                        "task_id" => $data["task_id"]
+                    ]
+                )) {
+                    $msg["messages"]["success"][] = [
+                        "taskName" =>  $data["task_title"],
+                        "phrase" => "Successfuly deleted {$data["task_title"]}",
+                        "saltStmnt" => "Successfuly deleted",
+                    ];
+                } else {
+                    $msg["messages"]["failed"][] = [
+                        "taskName" => $data["task_title"],
+                        "phrase" => "Failed to remove {$data["task_title"]}",
+                        "saltStmnt" => "Failed to remove",
+                    ];
+                }
+            }
+        }
+        die(json_encode($msg));
+    }
+
+    public function completedTask($data)
+    {
+        # TODO
+        $msg = [
+            "type" => "SPECIAL_TASK_MANAGER_MSG",
+            "status" => "neutral",
+            "messages" => [
+                "failed" => null,
+                "success" => null,
+            ],
+        ];
+
+        [$existedItems, $errMessages] = $this->validateTasksExists($data);
+        if (!empty($errMessages)) {
+            foreach ($errMessages as $msgs) {
+                $msg["messages"]["failed"][] = [
+                    "errSaltStmnt" => "Failed to set complete task",
+                    ...$msgs,
+                ];
+            }
+        } else {
+            $msg["messages"]["failed"] = null;
+        }
+
+        $currentDate = $this->middleware->getCurrentTime();
+
+        if (!empty($existedItems)) {
+            foreach ($existedItems as $data) {
+                if ($data["task_status_id"] !== 2) {
+                    if (!$this->regularUserModel->setCompleteTasks(
+                        $data["UUID"],
+                        $data["task_id"],
+                        $currentDate,
+                    )) {
+                        $msg["messages"]["failed"][] = [
+                            "taskName" => $data["task_title"],
+                            "phrase" => "Failed to set complete task: {$data["task_title"]}",
+                            "saltStmnt" => "Failed to set complete task",
+                        ];
+                    }
+                    $msg["messages"]["success"][] = [
+                        "taskName" =>  $data["task_title"],
+                        "phrase" => "Successfuly completed task: {$data["task_title"]}",
+                        "saltStmnt" => "Successfuly completed",
+                    ];
+                } else {
+                    $msg["messages"]["failed"][] = [
+                        "taskName" => $data["task_title"],
+                        "phrase" => "This task is already set to complete: {$data["task_title"]}",
+                        "saltStmnt" => "Task is already set to complete",
+                    ];
+                }
+            }
+        }
+        die(json_encode($msg));
     }
 
 
@@ -369,43 +453,6 @@ class RegularUserController
                 ...$this->regularUserModel->filterFetchedTasks($fetchedTasks),
             ]
         ];
-    }
-
-    public function completedTask($data)
-    {
-        $getTask = $this->regularUserModel->getTask(
-            $data["UUID"],
-            $data["task_id"],
-        );
-
-        if (!$getTask) {
-            die(json_encode([
-                "message" => "Task does not exist.",
-                "type" => "TASK_MANAGER_ERR",
-                "status" => "unsuccessful",
-            ]));
-        }
-
-        if ($getTask[0]["task_status_id"] === 2) {
-            die(json_encode([
-                "message" => "Task is already set to COMPLETED",
-                "type" => "TASK_MANAGER_ERR",
-                "status" => "unsuccessful",
-            ]));
-        }
-
-        if (!$this->regularUserModel->setCompleteTasks(
-            $data["UUID"],
-            $data["task_id"],
-            $this->middleware->getCurrentTime()
-        )) {
-            # TODO
-            die(json_encode([
-                "message" => "Failed to set task complete",
-                "type" => "TASK_MANAGER_ERR",
-                "status" => "unsuccessful",
-            ]));
-        }
     }
 
     public function changeTaskTitle($data)
@@ -462,7 +509,7 @@ class RegularUserController
         }
     }
 
-    public function changeTaskPriority($data)
+    public function changeTaskPriority($data, $d = null)
     {
         $getTask = $this->regularUserModel->getTask(
             $data["UUID"],
@@ -491,7 +538,6 @@ class RegularUserController
 
     public function changeTaskDeadline($data)
     {
-        # TODO
         $getTask = $this->regularUserModel->getTask(
             $data["UUID"],
             $data["task_id"],

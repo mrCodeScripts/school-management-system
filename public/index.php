@@ -343,11 +343,8 @@ Router::post(
 		$teacherController,
 		$regularUserModel,
 	) {
-
 		# TEACHER REIGISTRATION AUTHENTICATION ROUTE
-
 		header("Content-Type: application/json");
-
 		$existingUser = $_SESSION["userAccount"] ?? null;
 		if (empty($existingUser)) {
 			die(json_encode([
@@ -356,14 +353,12 @@ Router::post(
 				"status" => "unsuccessful",
 			]));
 		}
-
 		$userEmail = $existingUser["currentAccountBasicInfo"][0]["user_email"] ?? null;
 		$generalAccData = $regularUserModel
 			->getGeneralAccountInformations($userEmail) ?? null;
 		$UUID = $generalAccData[0]["UUID"];
 		$findAccPremium = $regularUserModel
 			->findPremiumRegsiteredAccount($UUID) ?? null;
-
 		if (!empty($findAccPremium)) {
 			die(json_encode([
 				"message" => "This account is already a premium account. Please access account premium features via PIN (If this account is already approved by the addministrators.",
@@ -371,7 +366,6 @@ Router::post(
 				"status" => "unsuccessful",
 			]));
 		}
-
 		$teacher_informations = [
 			"professional_id" => $_POST["register_professional_id"] ?? null,
 			"firstname" => $_POST["register_firstname"] ?? null,
@@ -380,7 +374,6 @@ Router::post(
 			"hometown" => $_POST["register_hometown"] ?? null,
 			"current_location" => $_POST["register_current_location"] ?? null,
 		];
-
 		if ($middleware->isAnyColumnEmpty($teacher_informations)) {
 			die(json_encode([
 				"message" => "Incomplete data.",
@@ -388,12 +381,10 @@ Router::post(
 				"status" => "unsuccessful",
 			]));
 		}
-
 		$teacherController->teacherFullRegistration(
 			$teacher_informations,
 			$UUID
 		);
-
 		die(json_encode([
 			"message" => "You are now fucking registered.",
 			"type" => "TEACHER_REGISTRATION_SUCCESS",
@@ -421,7 +412,6 @@ Router::post(
 		header("Content-Type: application/json");
 		$clientData = $middleware->spillJSON();
 		[$UUID, $userEmail] = $regularUserController->validateTaskAccess();
-		# TODO (-- add CSRF token validation)
 		$middleware->validateCSRFToken($clientData["csrf_token"], true);
 		$newTask = [
 			"task_id" => $middleware->generateRandomToken() ?? null,
@@ -453,7 +443,6 @@ Router::post(
 		$middleware,
 		$regularUserController,
 	) {
-		# DONE (still on development) -- overal: DONE
 		header("Content-Type: application/json");
 		$clientData = $middleware->spillJSON();
 		[$UUID, $userEmail] = $regularUserController->validateTaskAccess();
@@ -462,16 +451,32 @@ Router::post(
 			"UUID" => $UUID,
 			"data" => [...$clientData["data"]],
 		];
-		$middleware->isAnyColumnEmpty($deleteTask, true);
+		$middleware->isAnyColumnEmpty($deleteTask["data"], true);
 		$regularUserController->deleteTasks($deleteTask);
 		$regularUserController->updateTaskList($UUID);
-		die(json_encode([
-			"message" => "Successfully deleted tasks.",
-			"type" => "TASK_DELETE_SUCCESS",
-			"status" => "successful"
-		]));
-
-		# CONTINUE THIS SHIT
+		/**
+		 * THE JSON DATA OF THE TASKS SELECTED MUST BE:
+		 * {
+		 *	"csrf_token": "123",
+		 *	"data": [
+		 *		{
+		 *			"task_id": "0f9b91b13db84a22",
+		 *			"task_index": 1,
+		 *			"task_name": "CODING SESSION AGAIN"
+		 *		},
+		 *		{
+		 *			"task_id": "296cc91d2b3b010e",
+		 *			"task_index": 2,
+		 *			"task_name": "CODING SESSION"
+		 *		},
+		 *		{
+		 *			"task_id": "522e61bf-fe8e-4e0f-b153-53136414fd14",
+		 *			"task_index": 3,
+		 *			"task_name": "REHAB PORNHUB ADDICTION"
+		 *		}
+		 *	]
+		 *}
+		 */
 	},
 	$middleware,
 	$regularUserController,
@@ -484,12 +489,13 @@ Router::post(
 		$middleware,
 		$regularUserController,
 	) {
-		# DONE (still on development) -- overall: DONE
 		header("Content-Type: application/json");
+		$clientData = $middleware->spillJSON();
 		[$UUID, $userEmail] = $regularUserController->validateTaskAccess();
+		$middleware->validateCSRFToken($clientData["csrf_token"], true);
 		$completedTask = [
-			"task_id" => $_POST["task_id"] ?? null,
 			"UUID" => $UUID,
+			"data" => [...$clientData["data"]],
 		];
 		$middleware->isAnyColumnEmpty($completedTask, true);
 		$regularUserController->completedTask($completedTask);
@@ -514,11 +520,12 @@ Router::post(
 	) {
 		# DONE (still on development) -- overall: DONE
 		header("Content-Type: application/json");
+		$clientData = $middleware->spillJSON();
+		$middleware->validateCSRFToken($clientData["csrf_token"], true);
 		[$UUID, $userEmail] = $regularUserController->validateTaskAccess();
 		$newTaskTitle = [
-			"task_id" => $_POST["task_id"] ?? null,
 			"UUID" => $UUID,
-			"task_title" => $_POST["new_task_title"] ?? null,
+			"data" => [...$clientData["data"]],
 		];
 		$middleware->isAnyColumnEmpty($newTaskTitle, true);
 		$regularUserController->changeTaskTitle($newTaskTitle);
@@ -677,29 +684,15 @@ Router::post("/account/files/metadata", function () {
 
 
 
-Router::post("/account/test/data", function ($middleware) {
+Router::post("/account/test/data", function ($middleware, $regularUserController) {
+	// $UUID = $_SESSION["userAccount"]["currentAccountBasicInfo"]["UUID"] ?? null;
+
 	header("Content-Type: application/json");
-	$clientJSON = file_get_contents("php://input");
-	$JSON = json_decode($clientJSON, true);
-
-	$clientData = $middleware->spillJSON();
-	$token = $clientData["token"] ?? null;
-	// echo $clientData["data"][0]["task_title"];
-	if (empty($token)) {
-		die(json_encode([
-			"error" => "no tokent found",
-		]));
-	}
-
-	$userData = [
-		"randomData" => $clientData["data"][0]["task_title"],
-	];
-
-	$middleware->isAnyColumnEmpty($userData, true);
-
-	// $userData = $_SESSION["userAccount"] ?? ["ERROR" => "User data is not available!"];
-	die(json_encode($userData));
-}, $middleware);
+	[$UUID, $userEmail] = $regularUserController->validateTaskAccess();
+	$regularUserController->updateAccountInformation();
+	$regularUserController->updateTaskList($UUID);
+	die(json_encode($_SESSION["userAccount"]));
+}, $middleware, $regularUserController);
 
 
 
