@@ -341,8 +341,8 @@ class RegularUserModel extends DatabaseModel
    ) {
       # TODO
       $newData = [
-         "task_id" => $data["task_id"],
-         "task_title" => $this->middleware->stringSanitization($data["task_title"]),
+         "task_id" => $data["data"][0]["task_id"],
+         "task_title" => $this->middleware->stringSanitization($data["data"][0]["new_task_title"]),
          "UUID" => $data["UUID"],
          "task_last_modified" => $timeModif,
       ];
@@ -360,8 +360,8 @@ class RegularUserModel extends DatabaseModel
       $timeModif,
    ) {
       $newData = [
-         "task_id" => $data["task_id"],
-         "task_description" => $this->middleware->stringSanitization($data["task_description"]),
+         "task_id" => $data["data"][0]["task_id"],
+         "task_description" => $this->middleware->stringSanitization($data["data"][0]["new_task_title"]),
          "UUID" => $data["UUID"],
          "task_last_modified" => $timeModif,
       ];
@@ -379,8 +379,8 @@ class RegularUserModel extends DatabaseModel
       $timeModif,
    ) {
       $newData = [
-         "task_id" => $data["task_id"],
-         "task_priority" => $this->middleware->stringSanitization($data["task_priority"]),
+         "task_id" => $data["data"][0]["task_id"],
+         "task_priority" => $this->middleware->stringSanitization($data["data"][0]["new_task_priority"]),
          "UUID" => $data["UUID"],
          "task_last_modified" => $timeModif,
       ];
@@ -398,8 +398,8 @@ class RegularUserModel extends DatabaseModel
       $timeModif,
    ) {
       $newData = [
-         "task_id" => $data["task_id"],
-         "task_deadline" => $data["task_deadline"],
+         "task_id" => $data["data"][0]["task_id"],
+         "task_deadline" => $data["data"][0]["task_deadline"],
          "UUID" => $data["UUID"],
          "task_last_modified" => $timeModif,
       ];

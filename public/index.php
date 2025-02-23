@@ -454,29 +454,6 @@ Router::post(
 		$middleware->isAnyColumnEmpty($deleteTask["data"], true);
 		$regularUserController->deleteTasks($deleteTask);
 		$regularUserController->updateTaskList($UUID);
-		/**
-		 * THE JSON DATA OF THE TASKS SELECTED MUST BE:
-		 * {
-		 *	"csrf_token": "123",
-		 *	"data": [
-		 *		{
-		 *			"task_id": "0f9b91b13db84a22",
-		 *			"task_index": 1,
-		 *			"task_name": "CODING SESSION AGAIN"
-		 *		},
-		 *		{
-		 *			"task_id": "296cc91d2b3b010e",
-		 *			"task_index": 2,
-		 *			"task_name": "CODING SESSION"
-		 *		},
-		 *		{
-		 *			"task_id": "522e61bf-fe8e-4e0f-b153-53136414fd14",
-		 *			"task_index": 3,
-		 *			"task_name": "REHAB PORNHUB ADDICTION"
-		 *		}
-		 *	]
-		 *}
-		 */
 	},
 	$middleware,
 	$regularUserController,
@@ -511,6 +488,8 @@ Router::post(
 	$regularUserModel,
 );
 
+# TODO:
+	## - ADD THE SAME MESSAGING AND ERROR HANDLING AS THE OTHER TASK MANAGER ROUTERS AND CONTROLLERS
 Router::post(
 	"/account/task/c/title",
 	function (
@@ -550,11 +529,12 @@ Router::post(
 	) {
 		# DONE (still on development) -- overall: DONE
 		header("Content-Type: application/json");
+		$clientData = $middleware->spillJSON();
+		$middleware->validateCSRFToken($clientData["csrf_token"], true);
 		[$UUID, $userEmail] = $regularUserController->validateTaskAccess();
 		$newTaskDesc = [
-			"task_id" => $_POST["task_id"] ?? null,
 			"UUID" => $UUID,
-			"task_description" => $_POST["new_task_description"] ?? null,
+			"data" => [...$clientData["data"]],
 		];
 		$middleware->isAnyColumnEmpty($newTaskDesc, true);
 		$regularUserController->changeTaskDescription($newTaskDesc);
@@ -579,11 +559,12 @@ Router::post(
 	) {
 		# DONE (still on development) -- overall: DONE
 		header("Content-Type: application/json");
+		$clientData = $middleware->spillJSON();
+		$middleware->validateCSRFToken($clientData["csrf_token"], true);
 		[$UUID, $userEmail] = $regularUserController->validateTaskAccess();
 		$newTaskEndt = [
-			"task_id" => $_POST["task_id"] ?? null,
 			"UUID" => $UUID,
-			"task_deadline" => $_POST["new_task_deadline"] ?? null,
+			"data" => [...$clientData["data"]],
 		];
 		$middleware->isAnyColumnEmpty($newTaskEndt, true);
 		$regularUserController->changeTaskDeadline($newTaskEndt);
@@ -608,11 +589,12 @@ Router::post(
 	) {
 		# DONE (still on development) -- overall: DONE
 		header("Content-Type: application/json");
+		$clientData = $middleware->spillJSON();
+		$middleware->validateCSRFToken($clientData["csrf_token"], true);
 		[$UUID, $userEmail] = $regularUserController->validateTaskAccess();
 		$newTaskPrior = [
-			"task_id" => $_POST["task_id"],
 			"UUID" => $UUID,
-			"task_priority" => $_POST["new_task_priority"]
+			"data" => [...$clientData["data"]],
 		];
 		$middleware->isAnyColumnEmpty($newTaskPrior, true);
 		$regularUserController->changeTaskPriority($newTaskPrior);
@@ -633,10 +615,22 @@ Router::post("/account/task/c/sort", function () {
 });
 
 
+# 🚀 FINISH THE INBOX ROUTES IN 30 MINUTES
 # INBOX REQUEST ROUTES
-Router::post("/account/inbox/create", function () {
+Router::post("/account/inbox/create", function (
+	$middleware, 
+	$regularUserController
+	) {
 	# TODO
-});
+	$data = [
+		"csrf_token" => "123",
+		"data" => [
+			""
+		]
+	];
+}, 
+$middleware, 
+$regularUserController);
 
 Router::post("/account/inbox/delete", function () {
 	# TODO

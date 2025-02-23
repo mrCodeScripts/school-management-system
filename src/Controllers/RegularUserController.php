@@ -312,7 +312,7 @@ class RegularUserController
                 $taskLabel = $d["task_name"] ?? $d["task_index"] ?? null;
                 $errMessages[] = [
                     "taskName" => "'{$taskLabel}'",
-                    "phrase" => "{$taskLabel} does not exist",
+                    "phrase" => "does not exist",
                 ];
             }
         }
@@ -459,9 +459,9 @@ class RegularUserController
     {
         $getTask = $this->regularUserModel->getTask(
             $data["UUID"],
-            $data["task_id"],
+            $data["data"][0]["task_id"],
         );
-
+        
         if (!$getTask) {
             die(json_encode([
                 "message" => "Task does not exist.",
